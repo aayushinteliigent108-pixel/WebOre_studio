@@ -105,5 +105,24 @@ export async function initDatabase() {
     }
   }
 
+  // Seed admin user if none exists
+  const adminExists = await db.user.findFirst({ where: { role: 'admin' } });
+  if (!adminExists) {
+    const bcrypt = await import('bcryptjs');
+    const adminEmail = process.env.ADMIN_EMAIL || 'admin@webore.com';
+    const adminPassword = process.env.ADMIN_PASSWORD || 'admin@123';
+    const hashed = await bcrypt.default.hash(adminPassword, 12);
+    await db.user.create({
+      data: {
+        email: adminEmail,
+        password: hashed,
+        firstName: 'Admin',
+        lastName: 'Webore',
+        role: 'admin',
+      },
+    });
+    console.log(`Admin user created: ${adminEmail}`);
+  }
+
   console.log('Database seeded.');
 }
