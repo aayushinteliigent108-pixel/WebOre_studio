@@ -40,9 +40,24 @@ function setAuthCookie(res, token) {
 
 function logLogin(email, ip, device, provider, status, userId) {
   const prisma = getPrisma();
-  prisma.loginLog.create({
-    data: { userId, email, ip, device, provider, status },
-  }).catch(console.error);
+
+  const data = {
+    email,
+    ip,
+    device,
+    provider,
+    status,
+  };
+
+  if (userId) {
+    data.user = {
+      connect: {
+        id: userId,
+      },
+    };
+  }
+
+  prisma.loginLog.create({ data }).catch(console.error);
 }
 
 // Register
