@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <title>My Dashboard — Webore</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/variables.css">
+  <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="/css/layout.css">
+  <link rel="stylesheet" href="/css/components.css">
+  <link rel="stylesheet" href="/css/animations.css">
+  <link rel="stylesheet" href="/css/responsive.css">
+  <link rel="stylesheet" href="/css/pages.css">
+  <link rel="stylesheet" href="/css/chat.css">
+  <link rel="stylesheet" href="/css/modal.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>">
+  <style>
+    .dashboard { padding: 100px 0 var(--space-4xl); }
+    .dashboard__header { margin-bottom: var(--space-2xl); }
+    .dashboard__greeting { font-size: var(--text-3xl); font-weight: 800; margin-bottom: var(--space-xs); font-family: var(--font-display); letter-spacing: -0.03em; }
+    .dashboard__sub { color: var(--color-text-secondary); }
+    .dash-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-xl); }
+    .dash-card { background: var(--color-bg-card); border: 1px solid var(--color-border); border-radius: var(--radius-xl); padding: var(--space-xl); }
+    .dash-card__title { font-size: var(--text-lg); font-weight: 700; margin-bottom: var(--space-lg); display: flex; align-items: center; gap: var(--space-sm); font-family: var(--font-display); }
+    .dash-card__title span { font-size: 1.2rem; }
+    .status-badge { padding: 0.25rem 0.75rem; border-radius: var(--radius-full); font-size: var(--text-xs); font-weight: 600; }
+    .status-badge--new { background: rgba(245,130,13,0.1); color: var(--color-accent); }
+    .status-badge--read { background: rgba(99,102,241,0.1); color: #818cf8; }
+    .status-badge--in_progress { background: rgba(16,185,129,0.1); color: var(--color-success); }
+    .status-badge--completed { background: rgba(16,185,129,0.2); color: #34d399; }
+    .status-badge--replied { background: rgba(99,102,241,0.1); color: #818cf8; }
+    .msg-list { display: flex; flex-direction: column; gap: var(--space-md); }
+    .msg-item { padding: var(--space-lg); background: var(--color-bg-secondary); border: 1px solid var(--color-border); border-radius: var(--radius-lg); transition: border-color 0.2s; }
+    .msg-item:hover { border-color: rgba(245,130,13,0.2); }
+    .msg-item__header { display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-sm); }
+    .msg-item__type { font-weight: 600; }
+    .msg-item__date { font-size: var(--text-xs); color: var(--color-text-muted); }
+    .msg-item__preview { font-size: var(--text-sm); color: var(--color-text-secondary); line-height: 1.6; }
+    .update-timeline { display: flex; flex-direction: column; gap: var(--space-md); }
+    .update-item { display: flex; gap: var(--space-md); padding: var(--space-md); background: var(--color-bg-secondary); border-radius: var(--radius-lg); border: 1px solid var(--color-border); }
+    .update-item__dot { width: 10px; height: 10px; border-radius: 50%; margin-top: 6px; flex-shrink: 0; }
+    .update-item__dot--new { background: var(--color-accent); }
+    .update-item__dot--read { background: #818cf8; }
+    .update-item__dot--in_progress { background: var(--color-success); }
+    .update-item__dot--completed { background: #34d399; }
+    .update-item__content { flex: 1; }
+    .update-item__title { font-weight: 600; font-size: var(--text-sm); margin-bottom: 2px; }
+    .update-item__meta { font-size: var(--text-xs); color: var(--color-text-muted); }
+    .empty-state { text-align: center; padding: var(--space-2xl); color: var(--color-text-muted); }
+    .empty-state__icon { font-size: 3rem; margin-bottom: var(--space-md); }
+    .stat { text-align: center; }
+    .stat__number { font-family: var(--font-display); font-size: var(--text-3xl); font-weight: 800; color: var(--color-accent); letter-spacing: -0.04em; }
+    .stat__label { font-size: var(--text-xs); color: var(--color-text-muted); margin-top: 4px; }
+    @media (max-width: 768px) { .dash-grid { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <div class="cursor-glow" aria-hidden="true"></div>
+
+  <nav class="nav" id="nav" aria-label="Main navigation">
+    <a href="/" class="nav__logo" aria-label="Webore Home">Web<span>ore</span></a>
+    <nav class="nav__desktop" aria-label="Site links">
+      <a href="/" class="nav__link">Home</a>
+      <a href="/portfolio" class="nav__link">Work</a>
+      <a href="/services" class="nav__link">Services</a>
+      <a href="/pricing" class="nav__link">Pricing</a>
+      <a href="/about" class="nav__link">About</a>
+      <a href="/contact" class="nav__link">Contact</a>
+      <a href="/dashboard" id="dashboardLink" class="nav__link nav__link--active" aria-current="page">Dashboard</a>
+    </nav>
+    <div class="nav__actions">
+      <span id="authButtons" style="display:none;"><a href="#" class="btn btn--ghost btn--sm" id="loginBtn">Login</a></span>
+      <span id="authAvatar" class="nav__auth-btn">
+        <div class="avatar" id="userAvatar" role="img" aria-label="User avatar"></div>
+      </span>
+      <button class="nav__menu-btn" id="menuBtn" aria-label="Open menu" aria-expanded="false" aria-controls="navOverlay">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="20" y2="17"/></svg>
+      </button>
+    </div>
+  </nav>
+  <div class="nav-overlay" id="navOverlay" role="dialog" aria-label="Navigation menu" aria-hidden="true">
+    <button class="nav-overlay__close" id="menuClose" aria-label="Close menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/></svg></button>
+    <nav class="nav-overlay__links" role="navigation">
+      <a href="/" class="nav-overlay__link">Home</a>
+      <a href="/portfolio" class="nav-overlay__link">Work</a>
+      <a href="/services" class="nav-overlay__link">Services</a>
+      <a href="/pricing" class="nav-overlay__link">Pricing</a>
+      <a href="/about" class="nav-overlay__link">About</a>
+      <a href="/contact" class="nav-overlay__link">Contact</a>
+      <a href="/dashboard" id="mobileDashboardLink" class="nav-overlay__link nav-overlay__link--active">Dashboard</a>
+      <div class="nav-overlay__cta"><a href="/contact" class="btn btn--primary btn--lg">Start a Project</a></div>
+    </nav>
+  </div>
+
+  <main>
+    <!-- Not logged in state -->
+    <div id="dashboardNotLoggedIn" class="dashboard" style="display:none;">
+      <div class="container">
+        <div class="empty-state" style="min-height:60vh;display:flex;flex-direction:column;align-items:center;justify-content:center;">
+          <div class="empty-state__icon">🔒</div>
+          <h2 style="margin-bottom:var(--space-md);">Please Log In</h2>
+          <p style="margin-bottom:var(--space-xl);max-width:400px;">You need to be logged in to view your dashboard. Log in or create an account to see your projects and messages.</p>
+          <a href="/" class="btn btn--primary">Go to Homepage &amp; Login</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Dashboard content -->
+    <div id="dashboardContent" class="dashboard" style="display:none;">
+      <div class="container">
+        <div class="dashboard__header">
+          <h1 class="dashboard__greeting" id="dashGreeting">Welcome back!</h1>
+          <p class="dashboard__sub" id="dashSub">Here's what's happening with your projects.</p>
+        </div>
+        <div class="dash-grid">
+          <!-- Profile Card -->
+          <div class="dash-card">
+            <div class="dash-card__title"><span>👤</span> My Profile</div>
+            <div id="profileInfo" style="display:flex;align-items:center;gap:var(--space-lg);">
+              <div class="avatar avatar--lg" id="profileAvatar" style="background:var(--color-accent);color:var(--color-bg-primary);"></div>
+              <div>
+                <div style="font-weight:600;" id="profileName"></div>
+                <div style="font-size:var(--text-sm);color:var(--color-text-secondary);" id="profileEmail"></div>
+                <div style="font-size:var(--text-xs);color:var(--color-text-muted);margin-top:4px;" id="profileMember"></div>
+              </div>
+            </div>
+            <div style="margin-top:var(--space-lg);padding-top:var(--space-lg);border-top:1px solid var(--color-border);">
+              <button class="btn btn--ghost btn--sm" id="logoutBtn" style="color:var(--color-error);">Logout</button>
+            </div>
+          </div>
+
+          <!-- Quick Stats -->
+          <div class="dash-card">
+            <div class="dash-card__title"><span>📊</span> Overview</div>
+            <div class="grid grid-3 gap-md">
+              <div class="stat"><div class="stat__number" id="statMessages">0</div><div class="stat__label">Messages Sent</div></div>
+              <div class="stat"><div class="stat__number" id="statActive">0</div><div class="stat__label">Active Projects</div></div>
+              <div class="stat"><div class="stat__number" id="statCompleted">0</div><div class="stat__label">Completed</div></div>
+            </div>
+          </div>
+
+          <!-- My Messages -->
+          <div class="dash-card" style="grid-column:1/-1;">
+            <div class="dash-card__title"><span>📬</span> My Messages</div>
+            <div id="messagesList" class="msg-list"></div>
+          </div>
+
+          <!-- Team Updates -->
+          <div class="dash-card" style="grid-column:1/-1;">
+            <div class="dash-card__title"><span>🔄</span> Team Updates</div>
+            <div id="updatesTimeline" class="update-timeline"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer class="footer" role="contentinfo">
+    <div class="container">
+      <div class="footer__bottom" style="border-top:none;padding-top:0;">
+        <span>&copy; 2026 Webore. All rights reserved.</span>
+        <span>Built with passion.</span>
+      </div>
+    </div>
+  </footer>
+
+  <div id="toast" class="toast" role="alert" aria-live="polite"></div>
+
+  <script>
+    const API = '/api';
+
+    function showToast(msg, type = 'success') {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.className = 'toast toast--' + type + ' show';
+      setTimeout(() => t.classList.remove('show'), 3000);
+    }
+
+    async function init() {
+      try {
+        const res = await fetch(API + '/auth/me', { credentials: 'include' });
+        const data = await res.json();
+        if (!data.user) {
+          document.getElementById('dashboardNotLoggedIn').style.display = 'block';
+          document.getElementById('dashboardContent').style.display = 'none';
+          return;
+        }
+        if (data.user.role === 'admin') { window.location.href = '/admin'; return; }
+        showDashboard(data.user);
+      } catch {
+        document.getElementById('dashboardNotLoggedIn').style.display = 'block';
+      }
+    }
+
+    function showDashboard(user) {
+      document.getElementById('dashboardNotLoggedIn').style.display = 'none';
+      document.getElementById('dashboardContent').style.display = 'block';
+      document.getElementById('dashGreeting').textContent = `Welcome back, ${user.firstName}!`;
+      document.getElementById('profileName').textContent = `${user.firstName} ${user.lastName || ''}`;
+      document.getElementById('profileEmail').textContent = user.email;
+      document.getElementById('profileMember').textContent = `Member since ${new Date(user.createdAt || Date.now()).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}`;
+      if (user.avatar) {
+        document.getElementById('profileAvatar').innerHTML = `<img src="${user.avatar}" alt="${user.firstName}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
+      } else {
+        document.getElementById('profileAvatar').textContent = user.firstName?.charAt(0)?.toUpperCase() || '?';
+      }
+      const navAvatar = document.getElementById('userAvatar');
+      if (navAvatar) {
+        if (user.avatar) { navAvatar.innerHTML = `<img src="${user.avatar}" alt="${user.firstName}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`; }
+        else { navAvatar.textContent = user.firstName?.charAt(0)?.toUpperCase() || '?'; }
+      }
+      loadMessages(user.email);
+      loadUpdates();
+      document.getElementById('logoutBtn')?.addEventListener('click', async () => {
+        await fetch(API + '/auth/logout', { method: 'POST', credentials: 'include' });
+        window.location.href = '/';
+      });
+    }
+
+    async function loadMessages(email) {
+      try {
+        const res = await fetch(API + '/client/messages', { credentials: 'include' });
+        const data = await res.json();
+        const messages = data.messages || [];
+        document.getElementById('statMessages').textContent = messages.length;
+        document.getElementById('statActive').textContent = messages.filter(m => m.status === 'new' || m.status === 'in_progress').length;
+        document.getElementById('statCompleted').textContent = messages.filter(m => m.status === 'completed' || m.status === 'replied').length;
+        const list = document.getElementById('messagesList');
+        if (messages.length === 0) {
+          list.innerHTML = '<div class="empty-state"><div class="empty-state__icon">📭</div><p>No messages yet. <a href="/contact" style="color:var(--color-accent);">Send us a message</a> to get started!</p></div>';
+          return;
+        }
+        list.innerHTML = messages.map(m => `
+          <div class="msg-item">
+            <div class="msg-item__header">
+              <div class="msg-item__type">${escapeHtml(m.projectType)}</div>
+              <div style="display:flex;align-items:center;gap:var(--space-sm);">
+                <span class="status-badge status-badge--${m.status}">${m.status.replace('_', ' ')}</span>
+                <span class="msg-item__date">${new Date(m.createdAt).toLocaleDateString()}</span>
+              </div>
+            </div>
+            <div class="msg-item__preview">${escapeHtml(m.message)}</div>
+            ${m.budget ? `<div style="margin-top:var(--space-sm);font-size:var(--text-xs);color:var(--color-text-muted);">Budget: ${escapeHtml(m.budget)}</div>` : ''}
+          </div>
+        `).join('');
+      } catch {
+        document.getElementById('messagesList').innerHTML = '<p style="color:var(--color-text-muted);">Failed to load messages.</p>';
+      }
+    }
+
+    async function loadUpdates() {
+      try {
+        const res = await fetch(API + '/client/updates', { credentials: 'include' });
+        const data = await res.json();
+        const updates = data.updates || [];
+        const timeline = document.getElementById('updatesTimeline');
+        if (updates.length === 0) {
+          timeline.innerHTML = '<div class="empty-state"><div class="empty-state__icon">🔄</div><p>No updates yet. Our team will keep you posted on your projects.</p></div>';
+          return;
+        }
+        const statusLabels = { 'new': 'Message received — our team will review it soon', 'read': 'Your message has been reviewed by our team', 'in_progress': 'Work is in progress on your project', 'completed': 'Your project has been completed!', 'replied': 'Our team has replied to your message' };
+        timeline.innerHTML = updates.map(u => `
+          <div class="update-item">
+            <div class="update-item__dot update-item__dot--${u.status}"></div>
+            <div class="update-item__content">
+              <div class="update-item__title">${escapeHtml(u.projectType)}</div>
+              <div style="font-size:var(--text-sm);color:var(--color-text-secondary);margin-bottom:4px;">${statusLabels[u.status] || u.status}</div>
+              <div class="update-item__meta">${new Date(u.createdAt).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</div>
+            </div>
+          </div>
+        `).join('');
+      } catch {
+        document.getElementById('updatesTimeline').innerHTML = '<p style="color:var(--color-text-muted);">Failed to load updates.</p>';
+      }
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      const div = document.createElement('div');
+      div.textContent = str;
+      return div.innerHTML;
+    }
+
+    window.addEventListener('scroll', () => { document.getElementById('nav')?.classList.toggle('scrolled', window.scrollY > 40); }, { passive: true });
+    document.getElementById('menuBtn')?.addEventListener('click', () => {
+      const overlay = document.getElementById('navOverlay');
+      overlay.classList.add('active'); overlay.setAttribute('aria-hidden', 'false'); document.body.style.overflow = 'hidden';
+    });
+    document.getElementById('menuClose')?.addEventListener('click', () => {
+      const overlay = document.getElementById('navOverlay');
+      overlay.classList.remove('active'); overlay.setAttribute('aria-hidden', 'true'); document.body.style.overflow = '';
+    });
+
+    init();
+  </script>
+</body>
+</html>

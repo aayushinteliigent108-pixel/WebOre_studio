@@ -1,0 +1,374 @@
+/* animations.css — Scroll-reveal, micro-animations — Cloud Studio */
+
+/* ===== Scroll-reveal base (same class names as before) ===== */
+.sr {
+  opacity: 0;
+  transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.sr.in { opacity: 1; transform: none !important; }
+
+.sr--up    { transform: translateY(32px); }
+.sr--left  { transform: translateX(-32px); }
+.sr--right { transform: translateX(32px); }
+.sr--scale { transform: scale(0.94); }
+
+/* Delay helpers */
+.sr-d1 { transition-delay: 0.05s; }
+.sr-d2 { transition-delay: 0.12s; }
+.sr-d3 { transition-delay: 0.19s; }
+.sr-d4 { transition-delay: 0.26s; }
+.sr-d5 { transition-delay: 0.33s; }
+.sr-d6 { transition-delay: 0.40s; }
+
+/* ===== Card slide (used by portfolio.js JS rendering) ===== */
+.card-slide {
+  opacity: 0;
+  transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.card-slide.in { opacity: 1; transform: none !important; }
+.card-slide--from-left   { transform: translateX(-28px); }
+.card-slide--from-right  { transform: translateX(28px); }
+.card-slide--from-bottom { transform: translateY(28px); }
+
+/* ===== Stagger group ===== */
+.reveal-stagger > * { opacity: 0; transform: translateY(24px); }
+.reveal-stagger.in > * {
+  opacity: 1;
+  transform: none;
+  transition: opacity 0.6s cubic-bezier(0.16,1,0.3,1), transform 0.6s cubic-bezier(0.16,1,0.3,1);
+}
+.reveal-stagger.in > *:nth-child(1) { transition-delay: 0.00s; }
+.reveal-stagger.in > *:nth-child(2) { transition-delay: 0.08s; }
+.reveal-stagger.in > *:nth-child(3) { transition-delay: 0.16s; }
+.reveal-stagger.in > *:nth-child(4) { transition-delay: 0.24s; }
+.reveal-stagger.in > *:nth-child(5) { transition-delay: 0.32s; }
+.reveal-stagger.in > *:nth-child(6) { transition-delay: 0.40s; }
+
+/* ===== Simple reveal (index.html uses .reveal class) ===== */
+.reveal { opacity: 0; transform: translateY(24px); transition: opacity 0.7s ease, transform 0.7s ease; }
+.reveal.in { opacity: 1; transform: none; }
+.reveal-up { opacity: 0; transform: translateY(24px); transition: opacity 0.7s ease, transform 0.7s ease; }
+.reveal-up.in { opacity: 1; transform: none; }
+
+/* ===== Nav drop ===== */
+@keyframes navDrop {
+  from { opacity: 0; transform: translateX(-50%) translateY(-30px); }
+  to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+/* ===== Count-up (class used by portfolio.js) ===== */
+.count-up-target { font-variant-numeric: tabular-nums; }
+
+/* ===== Hero line-reveal (used in page-hero h1) ===== */
+.line { display: block; overflow: hidden; }
+.line span {
+  display: inline-block;
+  opacity: 0;
+  transform: translateY(110%);
+  animation: lineUp 0.85s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+.line:nth-child(1) span { animation-delay: 0.3s; }
+.line:nth-child(2) span { animation-delay: 0.42s; }
+.line:nth-child(3) span { animation-delay: 0.54s; }
+@keyframes lineUp { to { opacity: 1; transform: translateY(0); } }
+
+/* ===== Rise-in utility ===== */
+@keyframes riseIn { to { opacity: 1; transform: translateY(0); } }
+.rise { opacity: 0; transform: translateY(14px); animation: riseIn 0.8s cubic-bezier(0.16,1,0.3,1) forwards; }
+.rise-d1 { animation-delay: 0.15s; }
+.rise-d2 { animation-delay: 0.30s; }
+.rise-d3 { animation-delay: 0.45s; }
+.rise-d4 { animation-delay: 0.60s; }
+
+/* ===== Pulsing dot ===== */
+@keyframes pulseDot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: 0.4; transform: scale(1.5); }
+}
+
+/* ===== Spinning ===== */
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ===== EQ bars (services page animated visual) ===== */
+.eq { display: flex; align-items: flex-end; gap: 8px; height: 100%; padding: 20px; }
+.eq-bar {
+  flex: 1;
+  background: linear-gradient(to top, var(--accent-dim), var(--accent));
+  border-radius: 4px;
+  animation: eqBounce 1.4s ease-in-out infinite;
+}
+.eq-bar:nth-child(1) { height: 30%; animation-delay: 0s; }
+.eq-bar:nth-child(2) { height: 70%; animation-delay: 0.15s; }
+.eq-bar:nth-child(3) { height: 45%; animation-delay: 0.30s; }
+.eq-bar:nth-child(4) { height: 85%; animation-delay: 0.45s; }
+.eq-bar:nth-child(5) { height: 55%; animation-delay: 0.60s; }
+.eq-bar:nth-child(6) { height: 65%; animation-delay: 0.75s; }
+@keyframes eqBounce { 0%,100% { transform: scaleY(1); } 50% { transform: scaleY(1.35); } }
+
+/* ===== Rotating rings ===== */
+.rings { display: flex; align-items: center; justify-content: center; height: 100%; position: relative; }
+.ring { position: absolute; border: 1px solid var(--border); border-radius: 50%; }
+.ring.r1 { width: 70px; height: 70px; animation: spin 6s linear infinite; }
+.ring.r2 { width: 110px; height: 110px; border-style: dashed; animation: spin 10s linear infinite reverse; }
+.ring.r3 { width: 150px; height: 150px; opacity: 0.5; animation: spin 16s linear infinite; }
+.rings .core {
+  width: 54px; height: 54px;
+  border-radius: 50%;
+  background: var(--accent);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.2rem; color: #0a0a0b;
+  z-index: 2;
+  animation: coreBeat 2.4s ease-in-out infinite;
+}
+@keyframes coreBeat { 0%,100% { transform: scale(1); } 50% { transform: scale(1.08); } }
+
+/* ===== Timeline progress bar ===== */
+.trow { display: flex; align-items: center; gap: 10px; font-size: 0.8rem; color: var(--text-dim); padding: 6px 0; opacity: 0.3; transition: opacity 0.4s; }
+.trow .check { width: 16px; height: 16px; border-radius: 50%; border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 0.6rem; flex-shrink: 0; }
+.trow.done { opacity: 1; }
+.trow.done .check { background: var(--accent); border-color: var(--accent); color: #111; }
+.bar { margin-top: 10px; height: 34px; border-radius: 999px; background: var(--bg-soft); display: flex; align-items: center; padding: 0 10px; }
+.bar-fill { height: 6px; border-radius: 999px; background: linear-gradient(90deg, var(--accent), #fff8); width: 0%; animation: barFill 6s ease-in-out infinite; }
+@keyframes barFill { 0% { width: 0%; } 45% { width: 100%; } 55% { width: 100%; } 100% { width: 0%; } }
+
+/* ===== Stats counter ===== */
+.stat-num { font-size: 3.2rem; font-weight: 700; color: var(--accent); font-family: var(--font-display); letter-spacing: -0.04em; }
+.stat-list { margin-top: 14px; font-size: 0.85rem; color: var(--text-dim); display: flex; flex-direction: column; gap: 4px; }
+.stat-list li { display: flex; gap: 8px; align-items: center; }
+.stat-list li::before { content: '✓'; color: var(--accent); font-weight: 700; flex-shrink: 0; }
+
+/* ===== Hover icon-circle ===== */
+.icon-circle {
+  width: 52px; height: 52px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #0a0a0b;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.3rem;
+  margin-bottom: 18px;
+  transition: transform var(--transition-spring);
+}
+.card:hover .icon-circle { transform: rotate(-14deg) scale(1.1); }
+
+/* ===== prefers-reduced-motion ===== */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  .sr, .card-slide, .reveal, .reveal-stagger > *, .reveal-up {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
+
+/* ===== ENHANCED ANIMATIONS ===== */
+
+/* Page load fade-in */
+@keyframes pageIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+body {
+  animation: pageIn 0.6s ease both;
+}
+
+/* Gradient shimmer on text */
+@keyframes gradientShift {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+.text-accent {
+  background: linear-gradient(135deg, var(--accent), #f5b50d, var(--accent));
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: gradientShift 4s ease infinite;
+}
+
+/* Glow pulse on buttons */
+@keyframes glowPulse {
+  0%, 100% { box-shadow: 0 4px 16px rgba(245, 130, 13, 0.3); }
+  50%      { box-shadow: 0 4px 32px rgba(245, 130, 13, 0.5); }
+}
+.btn--primary {
+  animation: glowPulse 3s ease-in-out infinite;
+}
+.btn--primary:hover {
+  animation: none;
+  box-shadow: 0 8px 32px rgba(245, 130, 13, 0.5);
+}
+
+/* Floating animation for cards on hover */
+@keyframes floatUp {
+  0%, 100% { transform: translateY(-4px); }
+  50%      { transform: translateY(-8px); }
+}
+.pricing-card--highlighted:hover {
+  animation: floatUp 2s ease-in-out infinite;
+}
+
+/* Smooth card hover lift */
+.portfolio-card,
+.service-card,
+.value-card,
+.team-card,
+.testimonial-card {
+  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1),
+              box-shadow 0.4s ease,
+              border-color 0.3s ease;
+}
+.portfolio-card:hover,
+.service-card:hover,
+.value-card:hover,
+.team-card:hover,
+.testimonial-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+}
+
+/* Nav link underline animation */
+.nav__link {
+  position: relative;
+}
+.nav__link::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: -4px;
+  width: 0;
+  height: 2px;
+  background: var(--accent);
+  transition: width 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.nav__link:hover::after,
+.nav__link--active::after {
+  width: 100%;
+}
+
+/* CTA banner glow */
+.cta-banner {
+  position: relative;
+  overflow: hidden;
+}
+.cta-banner::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: conic-gradient(from 0deg, transparent, rgba(245, 130, 13, 0.05), transparent, rgba(245, 130, 13, 0.05), transparent);
+  animation: rotateGlow 8s linear infinite;
+  pointer-events: none;
+}
+@keyframes rotateGlow {
+  to { transform: rotate(360deg); }
+}
+
+/* Eyebrow dot pulse */
+.eyebrow .dot {
+  animation: pulseDot 2s ease-in-out infinite;
+}
+
+/* FAQ accordion open animation */
+.faq-item__answer {
+  transition: max-height 0.45s cubic-bezier(0.16, 1, 0.3, 1),
+              padding 0.35s ease,
+              opacity 0.3s ease;
+}
+.faq-item.open .faq-item__answer {
+  opacity: 1;
+}
+
+/* Work slide transition */
+.work-slide {
+  transition: opacity 0.8s ease, transform 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.work-slide.active {
+  transform: scale(1);
+}
+
+/* Pricing card feature check animation */
+.pricing-card__feature svg {
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.pricing-card:hover .pricing-card__feature svg {
+  transform: scale(1.2);
+  color: var(--accent);
+}
+
+/* Staggered nav drop */
+.nav {
+  animation: navDrop 0.8s 0.1s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* Smooth scroll indicator */
+@keyframes scrollBounce {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(6px); }
+}
+
+/* Hero brand overlay fade */
+.hs-brand-overlay {
+  animation: fadeIn 1.5s ease 0.5s both;
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* Tech item hover glow */
+.tech-item {
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
+              border-color 0.3s ease,
+              box-shadow 0.3s ease;
+}
+.tech-item:hover {
+  transform: translateY(-4px);
+  border-color: rgba(245, 130, 13, 0.3);
+  box-shadow: 0 8px 24px rgba(245, 130, 13, 0.1);
+}
+
+/* Footer link slide */
+.footer__link {
+  transition: color 0.2s ease, transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.footer__link:hover {
+  transform: translateX(4px);
+}
+
+/* Chat widget bounce */
+.chat-widget__toggle {
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
+              background 0.3s ease;
+}
+.chat-widget__toggle:hover {
+  transform: scale(1.1);
+}
+
+/* Avatar hover */
+.avatar {
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.avatar:hover {
+  transform: scale(1.1);
+}
+
+/* Section divider animation */
+.section-divider {
+  width: 32px;
+  height: 2px;
+  background: var(--accent);
+  margin: 0 auto 1rem;
+  border-radius: 1px;
+  transition: width 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.section-header:hover .section-divider {
+  width: 64px;
+}

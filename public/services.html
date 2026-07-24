@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Webore Services — Web design, development, e-commerce, SEO, branding, and maintenance. Premium digital solutions for ambitious brands.">
+  <title>Services — Webore</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/variables.css">
+  <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="/css/layout.css">
+  <link rel="stylesheet" href="/css/components.css">
+  <link rel="stylesheet" href="/css/animations.css">
+  <link rel="stylesheet" href="/css/responsive.css">
+  <link rel="stylesheet" href="/css/chat.css">
+  <link rel="stylesheet" href="/css/modal.css">
+  <link rel="stylesheet" href="/css/pages.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>">
+  <style>
+    /* Services page specific fixes */
+    .service-detail {
+      margin-bottom: var(--space-4xl);
+      padding: var(--space-xl) 0;
+    }
+    .service-detail:last-child {
+      margin-bottom: 0;
+    }
+    .service-detail__visual {
+      border-radius: var(--radius-xl);
+      overflow: hidden;
+      aspect-ratio: 4/3;
+      background: var(--card);
+      border: 1px solid var(--border);
+      position: relative;
+      transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.4s ease;
+    }
+    .service-detail:hover .service-detail__visual {
+      transform: translateY(-4px);
+      box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+    }
+    .service-detail__visual::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(10,10,11,0.3), rgba(10,10,11,0.1));
+      transition: opacity 0.4s ease;
+    }
+    .service-detail:hover .service-detail__visual::after {
+      opacity: 0.5;
+    }
+    .service-detail__content {
+      padding: var(--space-xl) 0;
+      text-align: left;
+    }
+    .service-detail__content h3 {
+      font-size: var(--text-4xl);
+      margin-bottom: 1rem;
+      margin-top: 0.5rem;
+      text-align: left;
+    }
+    .service-detail__content p {
+      text-align: left;
+    }
+    .service-detail__features {
+      margin-top: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+    .service-detail__feature {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: var(--text-sm);
+      color: var(--text-dim);
+      text-align: left;
+    }
+    .service-detail__feature svg {
+      width: 16px;
+      height: 16px;
+      color: var(--accent);
+      flex-shrink: 0;
+    }
+
+    /* Responsive fixes */
+    @media (max-width: 1024px) {
+      .service-detail {
+        grid-template-columns: 1fr;
+        gap: var(--space-2xl);
+      }
+      .service-detail [style*="order:1"],
+      .service-detail [style*="order: 1"] {
+        order: 0 !important;
+      }
+      .service-detail [style*="order:2"],
+      .service-detail [style*="order: 2"] {
+        order: 0 !important;
+      }
+    }
+
+    @media (max-width: 820px) {
+      .service-detail {
+        margin-bottom: var(--space-3xl);
+      }
+      .service-detail__visual {
+        aspect-ratio: 16/9;
+        max-height: 280px;
+      }
+    }
+
+    @media (max-width: 600px) {
+      .service-detail {
+        margin-bottom: var(--space-2xl);
+        padding: var(--space-md) 0;
+      }
+      .service-detail__visual {
+        max-height: 220px;
+      }
+      .service-detail__content {
+        padding: var(--space-md) 0;
+      }
+      .service-detail__content h3 {
+        font-size: var(--text-3xl);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="cursor-glow" aria-hidden="true"></div>
+
+  <nav class="nav" id="nav" aria-label="Main navigation">
+    <a href="/" class="nav__logo" aria-label="Webore Home">Web<span>ore</span></a>
+    <nav class="nav__desktop" aria-label="Site links">
+      <a href="/" class="nav__link">Home</a>
+      <a href="/portfolio" class="nav__link">Work</a>
+      <a href="/services" class="nav__link nav__link--active" aria-current="page">Services</a>
+      <a href="/pricing" class="nav__link">Pricing</a>
+      <a href="/about" class="nav__link">About</a>
+      <a href="/contact" class="nav__link">Contact</a>
+      <a href="/dashboard" id="dashboardLink" class="nav__link" style="display:none;">Dashboard</a>
+    </nav>
+    <div class="nav__actions">
+      <span id="authButtons"><a href="#" class="btn btn--ghost btn--sm" id="loginBtn">Login</a></span>
+      <span id="authAvatar" style="display:none;" class="nav__auth-btn">
+        <div class="avatar" id="userAvatar" role="img" aria-label="User avatar"></div>
+      </span>
+      <button class="nav__menu-btn" id="menuBtn" aria-label="Open menu" aria-expanded="false" aria-controls="navOverlay">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="20" y2="17"/></svg>
+      </button>
+    </div>
+  </nav>
+  <div class="nav-overlay" id="navOverlay" role="dialog" aria-label="Navigation menu" aria-hidden="true">
+    <button class="nav-overlay__close" id="menuClose" aria-label="Close menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/></svg></button>
+    <nav class="nav-overlay__links" role="navigation">
+      <a href="/" class="nav-overlay__link">Home</a>
+      <a href="/portfolio" class="nav-overlay__link">Work</a>
+      <a href="/services" class="nav-overlay__link nav-overlay__link--active" aria-current="page">Services</a>
+      <a href="/pricing" class="nav-overlay__link">Pricing</a>
+      <a href="/about" class="nav-overlay__link">About</a>
+      <a href="/contact" class="nav-overlay__link">Contact</a>
+      <a href="/dashboard" id="mobileDashboardLink" class="nav-overlay__link" style="display:none;">Dashboard</a>
+      <div class="nav-overlay__cta"><a href="/contact" class="btn btn--primary btn--lg">Start a Project</a></div>
+    </nav>
+  </div>
+
+  <main>
+    <!-- Page Hero -->
+    <section class="page-hero" aria-label="Services hero">
+      <div class="eyebrow sr sr--up"><span class="dot"></span>What We Do</div>
+      <h1 class="sr sr--up">Services That <span class="text-accent">Drive Results</span></h1>
+      <p class="sr sr--up">We don't just build websites — we craft digital experiences that convert visitors into clients and scale with your business.</p>
+    </section>
+
+    <!-- Service Details -->
+    <section class="section" style="padding-top:var(--space-2xl);">
+      <div class="container">
+
+        <!-- 01: Web Design -->
+        <div class="service-detail sr sr--left">
+          <div class="service-detail__visual" style="background-image:url('https://images.unsplash.com/photo-1561070791-2526d30994b5?w=800&h=600&fit=crop');background-size:cover;background-position:center;">
+          </div>
+          <div class="service-detail__content">
+            <div class="tag tag--accent" style="margin-bottom:var(--space-md);">01</div>
+            <h3>Web <span class="text-accent">Design</span></h3>
+            <p>We create stunning, conversion-focused designs that make your brand impossible to ignore. Every pixel is intentional, every interaction designed to guide your visitors toward action.</p>
+            <p style="margin-top:1rem;">Our design process starts with understanding your brand DNA — your values, your audience, your competition. Then we craft a visual language that's uniquely yours.</p>
+            <div class="service-detail__features">
+              <div class="service-detail__feature"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Custom UI/UX design — no templates</div>
+              <div class="service-detail__feature"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Responsive across all devices</div>
+              <div class="service-detail__feature"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Interactive prototypes &amp; wireframes</div>
+              <div class="service-detail__feature"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Conversion-optimized layouts</div>
+              <div class="service-detail__feature"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Brand-aligned visual identity</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="divider" style="margin:var(--space-xl) 0;"></div>
+
+        <!-- 02: Development -->
+        <div class="service-detail sr sr--right">
+          <div class="service-detail__content" style="order:2;">
+            <div class="tag tag--accent" style="margin-bottom:var(--space-md);">02</div>
+            <h3>Web <span class="text-accent">Development</span></h3>
+            <p>Fast, clean code using modern technologies. No bloated frameworks — just raw performance and reliability that your users will feel.</p>
+            <p style="margin-top:1rem;">We write code like we write our coffee orders: strong, clean, and no unnecessary extras. Every project is built with accessibility, performance, and maintainability in mind.</p>
+            <div class="service-detail__features">
+              <div class="service-detail__feature"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Vanilla JS, Node.js, React, Next.js</div>
+              <div class="service-detail__feature"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>REST APIs &amp; GraphQL backends</div>
+              <div class="service-detail__feature"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Database design &amp; optimization</div>
+              <div class="service-detail__feature"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>99.9% uptime guaranteed</div>
+              <div class="service-detail__feature"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>CI/CD &amp; automated deployments</div>
+            </div>
+          </div>
+          <div class="service-detail__visual" style="order:1;background-image:url('https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=800&h=600&fit=crop');background-size:cover;background-position:center;">
+          </div>
+        </div>
+
+        <div class="divider" style="margin:var(--space-xl) 0;"></div>
+
+        <!-- 03: E-commerce -->
+        <div class="service-detail sr sr--left">
+          <div class="service-detail__visual" style="background-image:url('https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=800&h=600&fit=crop');background-size:cover;background-position:center;">
+          </div>
+          <div class="service-detail__content">
+            <div class="tag tag--accent" style="margin-bottom:var(--space-md);">03</div>
+            <h3>E-commerce <span class="text-accent">Solutions</span></h3>
+            <p>Online stores that actually sell. Secure payments, inventory management, and beautiful product pages that convert browsers into buyers.</p>
+            <p style="margin-top:1rem;">From Shopify custom themes to fully bespoke platforms, we build e-commerce experiences that feel premium and drive revenue.</p>
+            <div class="service-detail__features">
+              <div class="service-detail__feature"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Stripe, PayPal, Apple Pay integration</div>
+              <div class="service-detail__feature"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Inventory &amp; order management</div>
+              <div class="service-detail__feature"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Product pages that convert</div>
+              <div class="service-detail__feature"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Abandoned cart recovery</div>
+              <div class="service-detail__feature"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Analytics &amp; sales tracking</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="divider" style="margin:var(--space-xl) 0;"></div>
+
+        <!-- 04: SEO -->
+        <div class="service-detail sr sr--right">
+          <div class="service-detail__content" style="order:2;">
+            <div class="tag tag--accent" style="margin-bottom:var(--space-md);">04</div>
+            <h3>SEO &amp; <span class="text-accent">Growth</span></h3>
+            <p>Get found on Google. We handle technical SEO, content strategy, and ongoing optimization to drive organic traffic that converts.</p>
+            <p style="margin-top:1rem;">SEO isn't a one-time setup — it's an ongoing relationship. We monitor, tweak, and optimize to keep you climbing the rankings.</p>
+            <div class="service-detail__features">
+              <div class="service-detail__feature"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Technical SEO audit &amp; fixes</div>
+              <div class="service-detail__feature"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Keyword research &amp; strategy</div>
+              <div class="service-detail__feature"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>On-page optimization</div>
+              <div class="service-detail__feature"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Monthly reporting &amp; analytics</div>
+              <div class="service-detail__feature"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Local SEO &amp; Google Business</div>
+            </div>
+          </div>
+          <div class="service-detail__visual" style="order:1;background-image:url('https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=800&h=600&fit=crop');background-size:cover;background-position:center;">
+          </div>
+        </div>
+
+        <div class="divider" style="margin:var(--space-xl) 0;"></div>
+
+        <!-- 05: Branding -->
+        <div class="service-detail sr sr--left">
+          <div class="service-detail__visual" style="background-image:url('https://images.unsplash.com/photo-1558655146-9f40138edfeb?w=800&h=600&fit=crop');background-size:cover;background-position:center;">
+          </div>
+          <div class="service-detail__content">
+            <div class="tag tag--accent" style="margin-bottom:var(--space-md);">05</div>
+            <h3>Branding &amp; <span class="text-accent">Identity</span></h3>
+            <p>Complete brand identity — logo, colors, typography, and guidelines that scale. We create brands that people remember and trust.</p>
+            <p style="margin-top:1rem;">Your brand is more than a logo. It's the feeling people get when they see your name. We craft that feeling from the ground up.</p>
+            <div class="service-detail__features">
+              <div class="service-detail__feature"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Logo design &amp; variations</div>
+              <div class="service-detail__feature"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Color palette &amp; typography</div>
+              <div class="service-detail__feature"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Brand guidelines document</div>
+              <div class="service-detail__feature"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Stationery &amp; collateral design</div>
+              <div class="service-detail__feature"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Social media kit</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="divider" style="margin:var(--space-xl) 0;"></div>
+
+        <!-- 06: Maintenance -->
+        <div class="service-detail sr sr--right">
+          <div class="service-detail__content" style="order:2;">
+            <div class="tag tag--accent" style="margin-bottom:var(--space-md);">06</div>
+            <h3>Maintenance &amp; <span class="text-accent">Support</span></h3>
+            <p>Keep your site running perfectly. Updates, backups, security patches, and 24/7 monitoring — so you can focus on your business.</p>
+            <p style="margin-top:1rem;">A website isn't a "set it and forget it" product. We keep yours secure, fast, and up-to-date so it never lets you down.</p>
+            <div class="service-detail__features">
+              <div class="service-detail__feature"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>24/7 uptime monitoring</div>
+              <div class="service-detail__feature"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Weekly backups &amp; disaster recovery</div>
+              <div class="service-detail__feature"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Security patches &amp; SSL management</div>
+              <div class="service-detail__feature"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Performance optimization</div>
+              <div class="service-detail__feature"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Priority support &amp; fast response</div>
+            </div>
+          </div>
+          <div class="service-detail__visual" style="order:1;background-image:url('https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=800&h=600&fit=crop');background-size:cover;background-position:center;">
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Tech Stack -->
+    <section class="section" style="background:var(--bg-soft);">
+      <div class="container">
+        <div class="section-header sr sr--up" style="margin-bottom:var(--space-2xl);">
+          <div class="section-divider"></div>
+          <p class="section-label">Our Stack</p>
+          <h2>Technologies We <span class="text-accent">Love</span></h2>
+          <p style="max-width:500px;margin:var(--space-md) auto 0;">We use modern, battle-tested technologies to build fast, scalable, and maintainable digital products.</p>
+        </div>
+        <div class="tech-grid" data-stagger style="max-width:900px;margin:0 auto;">
+          <div class="tech-item sr"><div class="tech-item__icon">⚛️</div>React</div>
+          <div class="tech-item sr"><div class="tech-item__icon">▲</div>Next.js</div>
+          <div class="tech-item sr"><div class="tech-item__icon">🟢</div>Node.js</div>
+          <div class="tech-item sr"><div class="tech-item__icon">🟦</div>TypeScript</div>
+          <div class="tech-item sr"><div class="tech-item__icon">🍃</div>MongoDB</div>
+          <div class="tech-item sr"><div class="tech-item__icon">🐘</div>PostgreSQL</div>
+          <div class="tech-item sr"><div class="tech-item__icon">🔷</div>Tailwind CSS</div>
+          <div class="tech-item sr"><div class="tech-item__icon">🟪</div>Prisma</div>
+          <div class="tech-item sr"><div class="tech-item__icon">☁️</div>Vercel</div>
+          <div class="tech-item sr"><div class="tech-item__icon">🐳</div>Docker</div>
+          <div class="tech-item sr"><div class="tech-item__icon">🔥</div>Firebase</div>
+          <div class="tech-item sr"><div class="tech-item__icon">💳</div>Stripe</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="section" style="padding-bottom:var(--space-3xl);">
+      <div class="container">
+        <div class="cta-banner sr sr--scale">
+          <h2>Ready to Build <span class="text-accent">Something Bold?</span></h2>
+          <p style="max-width:500px;margin:var(--space-md) auto var(--space-xl);">Let's talk about your project. No commitment, just a conversation about what we can build together.</p>
+          <a href="/contact" class="btn btn--primary btn--lg">Start a Project →</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer" role="contentinfo">
+    <div class="footer__grid" style="max-width:var(--container-max);margin:0 auto;">
+      <div class="footer__brand"><div class="footer__brand-name">Web<span>ore</span></div><p class="footer__brand-text">Premium creative digital studio. We build high-end websites that convert visitors into clients.</p></div>
+      <div><div class="footer__col-title">Services</div><a href="/services" class="footer__link">Web Design</a><a href="/services" class="footer__link">Development</a><a href="/services" class="footer__link">E-commerce</a><a href="/services" class="footer__link">SEO</a><a href="/services" class="footer__link">Branding</a></div>
+      <div><div class="footer__col-title">Company</div><a href="/about" class="footer__link">About</a><a href="/portfolio" class="footer__link">Portfolio</a><a href="/pricing" class="footer__link">Pricing</a><a href="/contact" class="footer__link">Contact</a></div>
+      <div><div class="footer__col-title">Legal</div><a href="/policy" class="footer__link">Privacy Policy</a><a href="/policies" class="footer__link">Terms of Service</a></div>
+    </div>
+    <div class="footer__bottom" style="max-width:var(--container-max);margin:0 auto;"><span>&copy; 2026 Webore. All rights reserved.</span><span>Built with passion.</span></div>
+  </footer>
+
+  <div id="chatWidget" class="chat-widget" aria-label="Chat with Webore">
+    <button class="chat-widget__toggle" id="chatToggle" aria-label="Open chat" aria-expanded="false" aria-controls="chatPanel"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></button>
+    <div class="chat-panel" id="chatPanel" role="dialog" aria-label="Chat with Webore" aria-hidden="true">
+      <div class="chat-panel__header">
+        <div style="display:flex;align-items:center;gap:12px;"><div class="avatar avatar--lg" style="background:var(--accent);color:#0a0a0b;">W</div><div><div style="font-weight:600;">Webore AI</div><div style="font-size:var(--text-xs);color:var(--color-success);">● Online</div></div></div>
+        <button class="chat-panel__close" id="chatClose" aria-label="Close chat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/></svg></button>
+      </div>
+      <div class="chat-panel__messages" id="chatMessages"><div class="chat-msg chat-msg--bot"><div class="chat-msg__bubble">Hey! 👋 I'm the Webore assistant. How can I help you today?</div></div></div>
+      <form class="chat-panel__input" id="chatForm">
+        <input type="text" class="input" id="chatInput" placeholder="Type a message..." autocomplete="off" aria-label="Type a message">
+        <button type="submit" class="btn btn--primary btn--icon" aria-label="Send message"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg></button>
+      </form>
+    </div>
+  </div>
+  <div id="toast" class="toast" role="alert" aria-live="polite"></div>
+  <script type="module" src="/js/main.js"></script>
+  <script>
+    (function(){
+      var io=new IntersectionObserver(function(e){e.forEach(function(x){if(x.isIntersecting){x.target.classList.add('in');io.unobserve(x.target);}});},{threshold:0.12});
+      document.querySelectorAll('.sr,[data-stagger]').forEach(function(el){io.observe(el);});
+      window.addEventListener('scroll',function(){document.getElementById('nav').classList.toggle('scrolled',window.scrollY>40);},{passive:true});
+      var menuBtn=document.getElementById('menuBtn'),menuClose=document.getElementById('menuClose'),overlay=document.getElementById('navOverlay');
+      menuBtn&&menuBtn.addEventListener('click',function(){overlay.classList.add('active');overlay.setAttribute('aria-hidden','false');menuBtn.setAttribute('aria-expanded','true');document.body.style.overflow='hidden';});
+      function closeMenu(){overlay.classList.remove('active');overlay.setAttribute('aria-hidden','true');menuBtn.setAttribute('aria-expanded','false');document.body.style.overflow='';}
+      menuClose&&menuClose.addEventListener('click',closeMenu);
+      overlay&&overlay.querySelectorAll('.nav-overlay__link').forEach(function(l){l.addEventListener('click',closeMenu);});
+      document.addEventListener('keydown',function(e){if(e.key==='Escape'&&overlay&&overlay.classList.contains('active'))closeMenu();});
+    })();
+  </script>
+</body>
+</html>

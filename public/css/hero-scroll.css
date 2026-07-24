@@ -1,0 +1,370 @@
+/* hero-scroll.css — Cinematic scroll-linked hero styles — Cloud Studio */
+
+/* ===== Track (creates scroll height) ===== */
+.hs-track {
+  position: relative;
+  height: 500vh;
+}
+
+/* ===== Sticky container ===== */
+.hs-sticky {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* ===== Canvas ===== */
+.hs-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  will-change: transform;
+}
+
+/* ===== Brand overlay — hidden ===== */
+.hs-brand-overlay {
+  display: none;
+}
+
+.hs-brand-overlay__inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 16px 28px;
+  background: rgba(10, 10, 11, 0.52);
+  backdrop-filter: blur(18px) saturate(0.8);
+  -webkit-backdrop-filter: blur(18px) saturate(0.8);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 999px;
+  box-shadow:
+    0 0 0 1px rgba(245,130,13,0.06),
+    0 8px 32px rgba(0,0,0,0.5);
+  animation: hsBrandPulse 4s ease-in-out infinite;
+}
+
+@keyframes hsBrandPulse {
+  0%, 100% { opacity: 0.9; }
+  50%       { opacity: 0.65; }
+}
+
+.hs-brand-overlay__logo {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: rgba(245,244,240,0.85);
+  line-height: 1;
+}
+.hs-brand-overlay__logo span { color: var(--accent); }
+
+.hs-brand-overlay__tagline {
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(245,244,240,0.38);
+  line-height: 1;
+}
+
+/* ===== 4-edge feathering vignette ===== */
+/* Main: bottom heavy fade (most important — merges into next section) */
+.hs-vignette {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  pointer-events: none;
+  /* bottom fade — strongest, merges into page bg */
+  background:
+    linear-gradient(to bottom,
+      rgba(10,10,11,0.55)  0%,
+      transparent          18%,
+      transparent          65%,
+      rgba(10,10,11,0.82)  86%,
+      rgba(10,10,11,1)     100%
+    );
+}
+
+/* Side + top feathering via layered pseudo-elements */
+.hs-vignette::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    /* left edge */
+    linear-gradient(to right,
+      rgba(10,10,11,0.75)  0%,
+      transparent          14%
+    ),
+    /* right edge */
+    linear-gradient(to left,
+      rgba(10,10,11,0.75)  0%,
+      transparent          14%
+    );
+}
+
+.hs-vignette::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  /* top edge — lighter, just softens the nav boundary */
+  background: linear-gradient(to bottom,
+    rgba(10,10,11,0.45) 0%,
+    transparent         12%
+  );
+}
+
+
+/* ===== Loader ===== */
+.hs-loader {
+  position: absolute;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.5rem;
+  background: var(--bg);
+  transition: opacity 0.6s ease, visibility 0.6s;
+}
+.hs-loader.hidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+.hs-loader__logo {
+  font-family: var(--font-display);
+  font-size: 2rem;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  color: var(--text);
+  animation: loaderPulse 1.8s ease-in-out infinite;
+}
+.hs-loader__logo span { color: var(--accent); }
+
+@keyframes loaderPulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.4; }
+}
+
+.hs-loader__bar-wrap {
+  width: min(260px, 60vw);
+  height: 3px;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.hs-loader__bar {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent), #f5b50d);
+  border-radius: 2px;
+  width: 0%;
+  transition: width 0.2s ease;
+  box-shadow: 0 0 12px rgba(245, 130, 13, 0.45);
+}
+.hs-loader__text {
+  font-size: 0.72rem;
+  color: var(--text-dim);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  animation: loaderPulse 1.8s ease-in-out infinite 0.4s;
+}
+
+/* ===== Caption container ===== */
+.hs-captions {
+  position: absolute;
+  bottom: clamp(60px, 12vh, 120px);
+  left: clamp(24px, 6vw, 100px);
+  right: clamp(24px, 6vw, 100px);
+  z-index: 10;
+  pointer-events: none;
+}
+
+/* ===== Individual caption ===== */
+.hs-caption {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-end;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.4s ease;
+  will-change: opacity;
+}
+
+.hs-caption.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.hs-caption.exit {
+  opacity: 0;
+  transition: opacity 0.35s ease;
+}
+
+/* ===== Eyebrow pill ===== */
+.hs-caption__eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent);
+  padding: 5px 14px;
+  background: rgba(245, 130, 13, 0.1);
+  border: 1px solid rgba(245, 130, 13, 0.25);
+  border-radius: 999px;
+  margin-bottom: 1rem;
+  /* animates inline */
+}
+
+/* ===== Headline ===== */
+.hs-caption__headline {
+  font-family: var(--font-display);
+  font-size: clamp(2.4rem, 6vw, 5rem);
+  font-weight: 900;
+  line-height: 1.0;
+  letter-spacing: -0.04em;
+  color: var(--text);
+  margin: 0 0 0.75rem;
+  /* Lines stack vertically */
+}
+
+.hs-caption__headline-line {
+  display: block;
+  overflow: hidden; /* clips the word lift */
+  /* small padding so descenders aren't clipped */
+  padding-bottom: 0.06em;
+}
+
+/* Each word is wrapped: outer=overflow:hidden clip, inner=animated */
+.hs-word-outer {
+  display: inline-block;
+  overflow: hidden;
+  vertical-align: bottom;
+  margin-right: 0.22em;
+}
+
+.hs-word-inner {
+  display: inline-block;
+  /* starting position set via JS for each activation */
+}
+
+/* ===== Sub-text ===== */
+.hs-caption__sub {
+  font-size: clamp(0.9rem, 1.5vw, 1.1rem);
+  color: rgba(245, 244, 240, 0.65);
+  font-weight: 400;
+  letter-spacing: 0;
+  line-height: 1.5;
+  margin-bottom: 1.5rem;
+  max-width: 500px;
+  /* animates inline */
+}
+
+/* ===== Explore link ===== */
+.hs-caption__explore {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text);
+  padding: 10px 22px;
+  border: 1px solid rgba(245, 244, 240, 0.2);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(8px);
+  transition: background 0.25s, border-color 0.25s, color 0.25s, transform 0.25s;
+  pointer-events: auto;
+  text-decoration: none;
+}
+.hs-caption__explore:hover {
+  background: rgba(245, 130, 13, 0.12);
+  border-color: rgba(245, 130, 13, 0.4);
+  color: var(--accent);
+  transform: translateY(-2px);
+}
+
+/* ===== CTA button ===== */
+.hs-caption__cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-display);
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #0a0a0b;
+  background: var(--accent);
+  padding: 12px 28px;
+  border-radius: 999px;
+  text-decoration: none;
+  transition: background 0.2s, box-shadow 0.2s, transform 0.25s;
+  pointer-events: auto;
+}
+.hs-caption__cta:hover {
+  background: #f5950d;
+  box-shadow: 0 8px 24px rgba(245, 130, 13, 0.4);
+  transform: translateY(-2px) scale(1.02);
+  color: #0a0a0b;
+}
+
+/* ===== Right-edge dot progress ===== */
+.hs-dots {
+  position: absolute;
+  right: clamp(16px, 3vw, 40px);
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  z-index: 20;
+}
+
+.hs-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  cursor: pointer;
+  transition: background 0.3s, height 0.3s, border-radius 0.3s, box-shadow 0.3s;
+  padding: 0;
+}
+.hs-dot.active {
+  background: var(--accent);
+  height: 22px;
+  border-radius: 3px;
+  box-shadow: 0 0 8px rgba(245, 130, 13, 0.5);
+}
+.hs-dot:hover:not(.active) {
+  background: rgba(255, 255, 255, 0.55);
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 640px) {
+  .hs-captions {
+    left: 20px;
+    right: 20px;
+    bottom: 50px;
+  }
+  .hs-caption__headline {
+    font-size: clamp(1.8rem, 9vw, 3rem);
+  }
+  .hs-caption__sub {
+    font-size: 0.85rem;
+  }
+  .hs-dots { right: 10px; }
+}

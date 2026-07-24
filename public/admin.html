@@ -1,0 +1,974 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Admin — Webore</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/variables.css">
+  <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="/css/layout.css">
+  <link rel="stylesheet" href="/css/components.css">
+  <link rel="stylesheet" href="/css/animations.css">
+  <link rel="stylesheet" href="/css/responsive.css">
+  <link rel="stylesheet" href="/css/modal.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>">
+  <style>
+    .admin-layout { display: flex; min-height: 100vh; padding-top: 0; }
+    .admin-sidebar { width: 260px; background: var(--bg-soft); border-right: 1px solid var(--border); padding: var(--space-xl); position: fixed; top: 0; left: 0; bottom: 0; overflow-y: auto; z-index: 50; }
+    .admin-main { flex: 1; margin-left: 260px; padding: var(--space-2xl); }
+    .admin-logo { font-family: var(--font-display); font-weight: 700; font-size: var(--text-xl); margin-bottom: var(--space-2xl); }
+    .admin-logo span { color: var(--accent); }
+    .admin-nav { display: flex; flex-direction: column; gap: var(--space-xs); }
+    .admin-nav__link { display: flex; align-items: center; gap: var(--space-sm); padding: 0.625rem 1rem; border-radius: var(--radius-lg); color: var(--text-dim); font-size: var(--text-sm); transition: all var(--transition-fast); cursor: pointer; text-decoration: none; }
+    .admin-nav__link:hover, .admin-nav__link.active { background: rgba(245,130,13,0.1); color: var(--accent); }
+    .admin-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-2xl); }
+    .stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--space-lg); margin-bottom: var(--space-2xl); }
+    .stat-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-xl); padding: var(--space-xl); }
+    .stat-card__label { font-size: var(--text-sm); color: var(--text-dim); margin-bottom: var(--space-xs); }
+    .stat-card__value { font-size: var(--text-3xl); font-weight: 800; color: var(--accent); }
+    .admin-table { width: 100%; border-collapse: collapse; }
+    .admin-table th { text-align: left; padding: var(--space-md); font-size: var(--text-xs); text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-dim); border-bottom: 1px solid var(--border); }
+    .admin-table td { padding: var(--space-md); border-bottom: 1px solid var(--border); font-size: var(--text-sm); color: var(--text-dim); }
+    .admin-table tr:hover td { background: rgba(245,130,13,0.04); }
+    .status-badge { padding: 0.25rem 0.75rem; border-radius: var(--radius-full); font-size: var(--text-xs); font-weight: 600; }
+    .status-badge--new { background: rgba(245,130,13,0.1); color: var(--accent); }
+    .status-badge--read { background: rgba(16,185,129,0.1); color: var(--color-success); }
+    .status-badge--replied { background: rgba(99,102,241,0.1); color: #818cf8; }
+    .admin-section { display: none; }
+    .admin-section.active { display: block; }
+    .admin-panel { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-xl); padding: var(--space-xl); margin-bottom: var(--space-lg); }
+    .admin-panel__title { font-size: var(--text-lg); font-weight: 700; margin-bottom: var(--space-lg); }
+    .config-editor { background: var(--bg-soft); border: 1px solid var(--border); border-radius: var(--radius-md); padding: var(--space-lg); margin-bottom: var(--space-md); }
+    .config-editor__label { font-size: var(--text-sm); font-weight: 600; color: var(--text-dim); margin-bottom: var(--space-sm); }
+    /* Progress bar in range input */
+    input[type=range] { height: 6px; border-radius: 3px; background: var(--bg-soft); outline: none; }
+    input[type=range]::-webkit-slider-thumb { appearance: none; width: 16px; height: 16px; border-radius: 50%; background: var(--accent); cursor: pointer; }
+    /* Chart bars */
+    #analyticsChart > div { min-width: 0; }
+    @media (max-width: 768px) {
+      #projectDetail > div:last-child { grid-template-columns: 1fr !important; }
+    }
+    @media (max-width: 1024px) {
+      .stat-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 768px) {
+      .admin-sidebar { display: none; }
+      .admin-main { margin-left: 0; }
+      .stat-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="cursor-glow" aria-hidden="true"></div>
+  <!-- Admin Login Modal -->
+  <div id="adminLoginModal" class="modal" aria-hidden="false">
+    <div class="modal__backdrop"></div>
+    <div class="modal__content card" style="max-width:400px;">
+      <h3 style="margin-bottom:var(--space-sm);">Admin Access</h3>
+      <p style="margin-bottom:var(--space-lg);color:var(--color-text-secondary);font-size:var(--text-sm);">Login with your admin account or set up a new admin.</p>
+      <div id="adminSetupForm" style="display:none;">
+        <p style="font-size:var(--text-sm);color:var(--color-accent);margin-bottom:var(--space-md);">First-time setup — create your admin account</p>
+        <div class="input-group">
+          <label for="setupName">First Name</label>
+          <input type="text" id="setupName" class="input" placeholder="Admin" required>
+        </div>
+        <div class="input-group">
+          <label for="setupEmail">Email</label>
+          <input type="email" id="setupEmail" class="input" placeholder="webore1007@gmail.com" required>
+        </div>
+        <div class="input-group">
+          <label for="setupPassword">Password</label>
+          <input type="password" id="setupPassword" class="input" placeholder="••••••••" required>
+        </div>
+        <button class="btn btn--primary" style="width:100%;" id="setupSubmit">Create Admin Account</button>
+      </div>
+      <div id="adminLoginForm">
+        <div class="input-group">
+          <label for="adminEmail">Email</label>
+          <input type="email" id="adminEmail" class="input" placeholder="webore1007@gmail.com" required>
+        </div>
+        <div class="input-group">
+          <label for="adminPassword">Password</label>
+          <input type="password" id="adminPassword" class="input" placeholder="••••••••" required>
+        </div>
+        <button class="btn btn--primary" style="width:100%;" id="adminLoginSubmit">Login</button>
+        <p style="text-align:center;margin-top:var(--space-md);font-size:var(--text-sm);color:var(--color-text-muted);">
+          No admin? <a href="#" id="showSetup" style="color:var(--color-accent);">Create one</a>
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Admin Dashboard -->
+  <div class="admin-layout" id="adminLayout" style="display:none;">
+    <aside class="admin-sidebar" role="navigation" aria-label="Admin navigation">
+      <div class="admin-logo">Web<span>ore</span></div>
+      <nav class="admin-nav">
+        <div class="admin-nav__link active" data-section="dashboard">📊 Dashboard</div>
+        <div class="admin-nav__link" data-section="analytics">📈 Site Analytics</div>
+        <div class="admin-nav__link" data-section="projects">🗂️ Client Projects</div>
+        <div class="admin-nav__link" data-section="client-messages">💬 Client Messages</div>
+        <div class="admin-nav__link" data-section="messages">📬 Contact Leads</div>
+        <div class="admin-nav__link" data-section="users">👥 Users</div>
+        <div class="admin-nav__link" data-section="login-logs">🔐 Login Logs</div>
+        <div class="admin-nav__link" data-section="chat-metrics">🤖 AI Chat Metrics</div>
+        <div class="admin-nav__link" data-section="portfolio">🖼️ Portfolio CMS</div>
+        <div class="admin-nav__link" data-section="pricing-admin">💰 Pricing CMS</div>
+        <div class="admin-nav__link" data-section="testimonials-admin">⭐ Testimonials CMS</div>
+        <div class="admin-nav__link" data-section="chatbot-config">⚙️ Chatbot Config</div>
+        <div class="admin-nav__link" data-section="images">🔍 Image Search</div>
+        <div class="admin-nav__link" data-section="change-password">🔑 Change Password</div>
+      </nav>
+      <div style="margin-top:auto;padding-top:var(--space-2xl);">
+        <a href="/" class="btn btn--ghost btn--sm" style="width:100%;">← Back to Site</a>
+        <button class="btn btn--ghost btn--sm" style="width:100%;margin-top:var(--space-sm);" id="adminLogout">Logout</button>
+      </div>
+    </aside>
+
+    <main class="admin-main">
+      <!-- Dashboard -->
+      <section class="admin-section active" id="section-dashboard">
+        <div class="admin-header">
+          <h2>Dashboard</h2>
+          <span style="color:var(--color-text-muted);font-size:var(--text-sm);" id="adminDate"></span>
+        </div>
+        <div class="stat-grid" id="statsGrid"></div>
+        <div class="admin-panel">
+          <div class="admin-panel__title">Recent Leads</div>
+          <div id="recentLeads"></div>
+        </div>
+      </section>
+
+      <!-- Messages -->
+      <section class="admin-section" id="section-messages">
+        <div class="admin-header"><h2>Contact Leads</h2></div>
+        <div class="admin-panel"><div id="messagesTable"></div></div>
+      </section>
+
+      <!-- Site Analytics -->
+      <section class="admin-section" id="section-analytics">
+        <div class="admin-header"><h2>Site Analytics</h2></div>
+        <div class="stat-grid" id="analyticsStats"></div>
+        <div class="admin-panel">
+          <div class="admin-panel__title">Visits — Last 7 Days</div>
+          <div id="analyticsChart" style="display:flex;align-items:flex-end;gap:8px;height:160px;padding:var(--space-md) 0;"></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-lg);">
+          <div class="admin-panel">
+            <div class="admin-panel__title">Top Pages</div>
+            <div id="topPages"></div>
+          </div>
+          <div class="admin-panel">
+            <div class="admin-panel__title">Top Referrers</div>
+            <div id="topReferrers"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Client Projects -->
+      <section class="admin-section" id="section-projects">
+        <div class="admin-header">
+          <h2>Client Projects</h2>
+          <button class="btn btn--primary btn--sm" id="addProjectBtn2">+ New Project</button>
+        </div>
+        <div class="stat-grid" id="projectStats"></div>
+        <div class="admin-panel"><div id="projectsTable"></div></div>
+
+        <!-- Project Detail Panel (hidden by default) -->
+        <div id="projectDetail" style="display:none;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--space-lg);">
+            <button class="btn btn--ghost btn--sm" onclick="closeProjectDetail()">← Back to Projects</button>
+            <div id="projectDetailActions"></div>
+          </div>
+          <div style="display:grid;grid-template-columns:2fr 1fr;gap:var(--space-lg);">
+            <div>
+              <div class="admin-panel">
+                <div class="admin-panel__title">Project Updates</div>
+                <div id="projectUpdates"></div>
+                <div style="margin-top:var(--space-lg);padding-top:var(--space-lg);border-top:1px solid var(--border);">
+                  <div class="input-group">
+                    <input type="text" class="input" id="updateTitle" placeholder="Update title">
+                  </div>
+                  <div class="input-group">
+                    <textarea class="input" id="updateContent" rows="3" placeholder="Describe what was done..."></textarea>
+                  </div>
+                  <button class="btn btn--primary btn--sm" onclick="addProjectUpdate()">Post Update</button>
+                </div>
+              </div>
+              <div class="admin-panel">
+                <div class="admin-panel__title">Messages with Client</div>
+                <div id="projectMessages" style="min-height:100px;max-height:300px;overflow-y:auto;margin-bottom:var(--space-md);display:flex;flex-direction:column;gap:var(--space-sm);"></div>
+                <div style="display:flex;gap:var(--space-sm);">
+                  <input type="text" class="input" id="projectMsgInput" placeholder="Message the client..." style="flex:1;">
+                  <button class="btn btn--primary btn--sm" onclick="sendProjectMessage()">Send</button>
+                </div>
+              </div>
+            </div>
+            <div>
+              <div class="admin-panel">
+                <div class="admin-panel__title">Details</div>
+                <div id="projectDetails"></div>
+              </div>
+              <div class="admin-panel">
+                <div class="admin-panel__title">Progress</div>
+                <div id="projectProgress"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- New Project Form (hidden by default) -->
+        <div id="newProjectForm" style="display:none;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--space-lg);">
+            <button class="btn btn--ghost btn--sm" onclick="closeNewProject()">← Back to Projects</button>
+            <h3>New Client Project</h3>
+          </div>
+          <div class="admin-panel" style="max-width:600px;">
+            <div class="input-group"><label>Project Title</label><input type="text" class="input" id="npTitle" required></div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-md);">
+              <div class="input-group"><label>Client Name</label><input type="text" class="input" id="npClientName" required></div>
+              <div class="input-group"><label>Client Email</label><input type="email" class="input" id="npClientEmail" required></div>
+            </div>
+            <div class="input-group"><label>Description</label><textarea class="input" id="npDescription" rows="3"></textarea></div>
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:var(--space-md);">
+              <div class="input-group"><label>Status</label><select class="input" id="npStatus"><option value="pending">Pending</option><option value="in_progress">In Progress</option><option value="review">Review</option><option value="completed">Completed</option><option value="on_hold">On Hold</option></select></div>
+              <div class="input-group"><label>Priority</label><select class="input" id="npPriority"><option value="low">Low</option><option value="medium" selected>Medium</option><option value="high">High</option><option value="urgent">Urgent</option></select></div>
+              <div class="input-group"><label>Budget</label><input type="text" class="input" id="npBudget" placeholder="$5,000"></div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-md);">
+              <div class="input-group"><label>Start Date</label><input type="date" class="input" id="npStartDate"></div>
+              <div class="input-group"><label>Deadline</label><input type="date" class="input" id="npDeadline"></div>
+            </div>
+            <button class="btn btn--primary" style="width:100%;margin-top:var(--space-md);" onclick="createProject()">Create Project</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Client Messages -->
+      <section class="admin-section" id="section-client-messages">
+        <div class="admin-header">
+          <h2>Client Messages</h2>
+          <span id="unreadBadge" style="display:none;background:var(--accent);color:#111;padding:4px 12px;border-radius:999px;font-size:var(--text-xs);font-weight:700;"></span>
+        </div>
+        <div class="admin-panel"><div id="clientMessagesTable"></div></div>
+      </section>
+
+      <!-- Users -->
+      <section class="admin-section" id="section-users">
+        <div class="admin-header"><h2>Users</h2></div>
+        <div class="admin-panel"><div id="usersTable"></div></div>
+      </section>
+
+      <!-- Login Logs -->
+      <section class="admin-section" id="section-login-logs">
+        <div class="admin-header"><h2>Login Logs</h2></div>
+        <div class="admin-panel"><div id="loginLogsTable"></div></div>
+      </section>
+
+      <!-- Chat Metrics -->
+      <section class="admin-section" id="section-chat-metrics">
+        <div class="admin-header"><h2>AI Chat Metrics</h2></div>
+        <div class="stat-grid" id="chatStats"></div>
+      </section>
+
+      <!-- Portfolio CMS -->
+      <section class="admin-section" id="section-portfolio">
+        <div class="admin-header">
+          <h2>Portfolio CMS</h2>
+          <button class="btn btn--primary btn--sm" id="addProjectBtn">+ Add Project</button>
+        </div>
+        <div class="admin-panel"><div id="portfolioTable"></div></div>
+      </section>
+
+      <!-- Pricing CMS -->
+      <section class="admin-section" id="section-pricing-admin">
+        <div class="admin-header">
+          <h2>Pricing CMS</h2>
+          <button class="btn btn--primary btn--sm" id="addPlanBtn">+ Add Plan</button>
+        </div>
+        <div class="admin-panel"><div id="pricingTable"></div></div>
+      </section>
+
+      <!-- Testimonials CMS -->
+      <section class="admin-section" id="section-testimonials-admin">
+        <div class="admin-header">
+          <h2>Testimonials CMS</h2>
+          <button class="btn btn--primary btn--sm" id="addTestimonialBtn">+ Add Testimonial</button>
+        </div>
+        <div class="admin-panel"><div id="testimonialsTable"></div></div>
+      </section>
+
+      <!-- Chatbot Config -->
+      <section class="admin-section" id="section-chatbot-config">
+        <div class="admin-header"><h2>Chatbot Configuration</h2></div>
+        <div class="admin-panel" id="chatbotConfigPanel"></div>
+      </section>
+
+      <!-- Image Search -->
+      <section class="admin-section" id="section-images">
+        <div class="admin-header"><h2>Image Search</h2></div>
+        <div class="admin-panel">
+          <div class="flex gap-md items-center" style="margin-bottom:var(--space-lg);">
+            <input type="text" class="input" id="imageSearchQuery" placeholder="Search for images (e.g., 'website design', 'e-commerce')" style="flex:1;">
+            <button class="btn btn--primary" id="imageSearchBtn">Search</button>
+          </div>
+          <div class="grid grid-3 gap-md" id="imageResults"></div>
+        </div>
+      </section>
+
+      <!-- Change Password -->
+      <section class="admin-section" id="section-change-password">
+        <div class="admin-header"><h2>Change Password</h2></div>
+        <div class="admin-panel" style="max-width:480px;">
+          <p style="color:var(--color-text-secondary);font-size:var(--text-sm);margin-bottom:var(--space-lg);">Update your admin password. Choose a strong password you haven't used before.</p>
+          <div class="input-group">
+            <label for="currentPassword">Current Password</label>
+            <input type="password" id="currentPassword" class="input" placeholder="Enter current password" required>
+          </div>
+          <div class="input-group">
+            <label for="newPassword">New Password</label>
+            <input type="password" id="newPassword" class="input" placeholder="Min 8 characters" required>
+          </div>
+          <div class="input-group">
+            <label for="confirmPassword">Confirm New Password</label>
+            <input type="password" id="confirmPassword" class="input" placeholder="Repeat new password" required>
+          </div>
+          <button class="btn btn--primary" id="changePasswordBtn">Update Password</button>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div id="toast" class="toast" role="alert" aria-live="polite"></div>
+
+  <script>
+    // Admin panel logic (inline for simplicity)
+    const API = '/admin/api';
+    let adminToken = null;
+
+    function showToast(msg, type = 'success') {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.className = 'toast toast--' + type + ' show';
+      setTimeout(() => t.classList.remove('show'), 3000);
+    }
+
+    function authHeaders() {
+      return { 'Content-Type': 'application/json' };
+    }
+
+    async function adminFetch(url, opts = {}) {
+      const res = await fetch(url, { ...opts, credentials: 'include' });
+      if (res.status === 401 || res.status === 403) {
+        document.getElementById('adminLayout').style.display = 'none';
+        document.getElementById('adminLoginModal').style.display = '';
+        document.getElementById('adminLoginModal').setAttribute('aria-hidden', 'false');
+        return null;
+      }
+      return res.json();
+    }
+
+    // Check if admin exists
+    async function checkAdmin() {
+      try {
+        const res = await fetch('/api/auth/me', { credentials: 'include' });
+        const data = await res.json();
+        if (data.user && data.user.role === 'admin') {
+          showDashboard();
+          return;
+        }
+        // Logged in but not admin — show access denied
+        if (data.user) {
+          showToast('Access denied. Admin privileges required.', 'error');
+          await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
+        }
+      } catch {}
+      // Not logged in — show login form only, no dashboard content
+      document.getElementById('adminLayout').style.display = 'none';
+      document.getElementById('adminLoginModal').style.display = '';
+      document.getElementById('adminLoginModal').setAttribute('aria-hidden', 'false');
+    }
+
+    function showDashboard() {
+      document.getElementById('adminLoginModal').style.display = 'none';
+      document.getElementById('adminLoginModal').setAttribute('aria-hidden', 'true');
+      document.getElementById('adminLayout').style.display = 'flex';
+      document.getElementById('adminDate').textContent = new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+      loadDashboard();
+    }
+
+    // Setup admin
+    document.getElementById('showSetup')?.addEventListener('click', e => {
+      e.preventDefault();
+      document.getElementById('adminLoginForm').style.display = 'none';
+      document.getElementById('adminSetupForm').style.display = 'block';
+    });
+
+    document.getElementById('setupSubmit')?.addEventListener('click', async () => {
+      const data = {
+        firstName: document.getElementById('setupName').value,
+        email: document.getElementById('setupEmail').value,
+        password: document.getElementById('setupPassword').value,
+      };
+      if (!data.firstName || !data.email || !data.password) return showToast('Fill in all fields.', 'error');
+      const res = await fetch('/admin/api/setup-admin', { method: 'POST', headers: authHeaders(), body: JSON.stringify(data), credentials: 'include' });
+      const result = await res.json();
+      if (res.ok) { showDashboard(); showToast('Admin created!'); }
+      else showToast(result.error || 'Failed', 'error');
+    });
+
+    // Login
+    document.getElementById('adminLoginSubmit')?.addEventListener('click', async () => {
+      const data = {
+        email: document.getElementById('adminEmail').value,
+        password: document.getElementById('adminPassword').value,
+      };
+      if (!data.email || !data.password) return showToast('Fill in all fields.', 'error');
+      const res = await fetch('/api/auth/login', { method: 'POST', headers: authHeaders(), body: JSON.stringify(data), credentials: 'include' });
+      const result = await res.json();
+      if (res.ok) {
+        if (result.user.role === 'admin') {
+          showDashboard();
+        } else {
+          showToast('Access denied. This account does not have admin privileges.', 'error');
+          // Log out the non-admin user immediately
+          await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
+        }
+      } else showToast(result.error || 'Login failed.', 'error');
+    });
+
+    // Logout
+    document.getElementById('adminLogout')?.addEventListener('click', async () => {
+      await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
+      location.reload();
+    });
+
+    // Change Password
+    document.getElementById('changePasswordBtn')?.addEventListener('click', async () => {
+      const current = document.getElementById('currentPassword').value;
+      const newPass = document.getElementById('newPassword').value;
+      const confirm = document.getElementById('confirmPassword').value;
+      if (!current || !newPass || !confirm) return showToast('Fill in all fields.', 'error');
+      if (newPass.length < 8) return showToast('New password must be at least 8 characters.', 'error');
+      if (newPass !== confirm) return showToast('Passwords do not match.', 'error');
+      const res = await fetch(API + '/change-password', {
+        method: 'POST', headers: authHeaders(),
+        body: JSON.stringify({ currentPassword: current, newPassword: newPass }),
+        credentials: 'include'
+      });
+      const result = await res.json();
+      if (res.ok) {
+        showToast('Password updated!');
+        document.getElementById('currentPassword').value = '';
+        document.getElementById('newPassword').value = '';
+        document.getElementById('confirmPassword').value = '';
+      } else {
+        showToast(result.error || 'Failed', 'error');
+      }
+    });
+
+    // Navigation
+    document.querySelectorAll('.admin-nav__link').forEach(link => {
+      link.addEventListener('click', () => {
+        document.querySelectorAll('.admin-nav__link').forEach(l => l.classList.remove('active'));
+        link.classList.add('active');
+        document.querySelectorAll('.admin-section').forEach(s => s.classList.remove('active'));
+        document.getElementById('section-' + link.dataset.section)?.classList.add('active');
+        loadSection(link.dataset.section);
+      });
+    });
+
+    async function loadSection(section) {
+      const loaders = {
+        dashboard: loadDashboard,
+        analytics: loadAnalytics,
+        projects: loadProjects,
+        'client-messages': loadClientMessages,
+        messages: loadMessages,
+        users: loadUsers,
+        'login-logs': loadLoginLogs,
+        'chat-metrics': loadChatMetrics,
+        portfolio: loadPortfolioCMS,
+        'pricing-admin': loadPricingCMS,
+        'testimonials-admin': loadTestimonialsCMS,
+        'chatbot-config': loadChatbotConfig,
+      };
+      if (loaders[section]) await loaders[section]();
+    }
+
+    // ==================== ANALYTICS ====================
+    async function loadAnalytics() {
+      const data = await adminFetch(API + '/analytics');
+      if (!data) return;
+      document.getElementById('analyticsStats').innerHTML = `
+        <div class="stat-card"><div class="stat-card__label">Total Visits</div><div class="stat-card__value">${data.totalVisits}</div></div>
+        <div class="stat-card"><div class="stat-card__label">Today</div><div class="stat-card__value">${data.todayVisits}</div></div>
+        <div class="stat-card"><div class="stat-card__label">This Week</div><div class="stat-card__value">${data.weekVisits}</div></div>
+        <div class="stat-card"><div class="stat-card__label">This Month</div><div class="stat-card__value">${data.monthVisits}</div></div>
+      `;
+      // Daily chart
+      const maxCount = Math.max(...data.dailyVisits.map(d => d.count), 1);
+      document.getElementById('analyticsChart').innerHTML = data.dailyVisits.map(d => {
+        const h = Math.max((d.count / maxCount) * 140, 4);
+        return `<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;"><div style="width:100%;height:${h}px;background:var(--accent);border-radius:6px 6px 0 0;transition:height .5s;"></div><div style="font-size:.65rem;color:var(--text-dim);">${d.date.slice(5)}</div><div style="font-size:.7rem;font-weight:600;color:var(--accent);">${d.count}</div></div>`;
+      }).join('');
+      // Top pages
+      document.getElementById('topPages').innerHTML = data.visitsByPage.length
+        ? data.visitsByPage.map(p => `<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:var(--text-sm);"><span style="color:var(--text-dim);">${esc(p.page)}</span><span style="font-weight:600;color:var(--accent);">${p._count}</span></div>`).join('')
+        : '<p style="color:var(--text-dim);">No data yet. Page visits will appear once the tracking script is active.</p>';
+      // Referrers
+      document.getElementById('topReferrers').innerHTML = data.referrers.length
+        ? data.referrers.map(r => `<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:var(--text-sm);"><span style="color:var(--text-dim);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${esc(r.referrer || 'Direct')}</span><span style="font-weight:600;color:var(--accent);">${r._count}</span></div>`).join('')
+        : '<p style="color:var(--text-dim);">No referrer data yet.</p>';
+    }
+
+    // ==================== CLIENT PROJECTS ====================
+    let currentProjectId = null;
+
+    async function loadProjects() {
+      document.getElementById('projectDetail').style.display = 'none';
+      document.getElementById('newProjectForm').style.display = 'none';
+      document.getElementById('projectsTable').parentElement.parentElement.querySelector('.admin-header').style.display = '';
+      document.getElementById('projectStats').style.display = '';
+
+      const data = await adminFetch(API + '/projects');
+      if (!data) return;
+      const projects = data.projects;
+      const stats = { pending: 0, in_progress: 0, review: 0, completed: 0, on_hold: 0 };
+      projects.forEach(p => { if (stats[p.status] !== undefined) stats[p.status]++; });
+
+      document.getElementById('projectStats').innerHTML = `
+        <div class="stat-card"><div class="stat-card__label">Total Projects</div><div class="stat-card__value">${projects.length}</div></div>
+        <div class="stat-card"><div class="stat-card__label">In Progress</div><div class="stat-card__value">${stats.in_progress}</div></div>
+        <div class="stat-card"><div class="stat-card__label">Pending</div><div class="stat-card__value">${stats.pending}</div></div>
+        <div class="stat-card"><div class="stat-card__label">Completed</div><div class="stat-card__value">${stats.completed}</div></div>
+      `;
+
+      const statusColors = { pending: 'var(--accent)', in_progress: '#3b82f6', review: '#8b5cf6', completed: 'var(--color-success)', on_hold: '#6b7280' };
+      document.getElementById('projectsTable').innerHTML = projects.length
+        ? `<table class="admin-table"><thead><tr><th>Title</th><th>Client</th><th>Status</th><th>Progress</th><th>Deadline</th><th>Messages</th><th>Actions</th></tr></thead><tbody>${projects.map(p => `<tr style="cursor:pointer;" onclick="openProject('${p.id}')">
+            <td style="font-weight:600;">${esc(p.title)}</td>
+            <td>${esc(p.clientName)}</td>
+            <td><span style="display:inline-flex;align-items:center;gap:6px;font-size:var(--text-xs);font-weight:600;color:${statusColors[p.status] || 'var(--text-dim)'};"><span style="width:8px;height:8px;border-radius:50%;background:${statusColors[p.status] || 'var(--text-dim)'};"></span>${p.status.replace('_', ' ')}</span></td>
+            <td><div style="width:80px;height:6px;background:var(--bg-soft);border-radius:3px;overflow:hidden;"><div style="width:${p.progress}%;height:100%;background:var(--accent);border-radius:3px;"></div></div><span style="font-size:.7rem;color:var(--text-dim);margin-left:6px;">${p.progress}%</span></td>
+            <td style="font-size:var(--text-xs);color:var(--text-dim);">${p.deadline ? new Date(p.deadline).toLocaleDateString() : '—'}</td>
+            <td style="font-size:var(--text-xs);">${p._count.messages > 0 ? `<span style="color:var(--accent);">${p._count.messages}</span>` : '—'}</td>
+            <td><button class="btn btn--ghost btn--sm" onclick="event.stopPropagation();openProject('${p.id}')">View</button></td>
+          </tr>`).join('')}</tbody></table>`
+        : '<p style="color:var(--text-dim);text-align:center;padding:var(--space-2xl);">No client projects yet. Click "+ New Project" to get started.</p>';
+    }
+
+    window.openProject = async (id) => {
+      currentProjectId = id;
+      const data = await adminFetch(API + '/projects/' + id);
+      if (!data) return;
+      const p = data.project;
+      document.getElementById('projectsTable').parentElement.parentElement.querySelector('.admin-header').style.display = 'none';
+      document.getElementById('projectStats').style.display = 'none';
+      document.getElementById('projectsTable').parentElement.parentElement.querySelector('.admin-panel').style.display = 'none';
+      document.getElementById('projectDetail').style.display = 'block';
+
+      // Actions
+      document.getElementById('projectDetailActions').innerHTML = `
+        <select class="input" style="width:auto;padding:6px 12px;font-size:var(--text-xs);" onchange="updateProjectStatus('${id}',this.value)">
+          <option value="pending" ${p.status==='pending'?'selected':''}>Pending</option>
+          <option value="in_progress" ${p.status==='in_progress'?'selected':''}>In Progress</option>
+          <option value="review" ${p.status==='review'?'selected':''}>Review</option>
+          <option value="completed" ${p.status==='completed'?'selected':''}>Completed</option>
+          <option value="on_hold" ${p.status==='on_hold'?'selected':''}>On Hold</option>
+        </select>
+        <button class="btn btn--ghost btn--sm" onclick="deleteProject('${id}')" style="color:var(--color-error);">Delete</button>
+      `;
+
+      // Details
+      document.getElementById('projectDetails').innerHTML = `
+        <div style="font-size:var(--text-sm);display:flex;flex-direction:column;gap:var(--space-sm);">
+          <div><span style="color:var(--text-dim);">Client:</span> <strong>${esc(p.clientName)}</strong></div>
+          <div><span style="color:var(--text-dim);">Email:</span> ${esc(p.clientEmail)}</div>
+          <div><span style="color:var(--text-dim);">Budget:</span> ${esc(p.budget || 'Not set')}</div>
+          <div><span style="color:var(--text-dim);">Start:</span> ${p.startDate ? new Date(p.startDate).toLocaleDateString() : 'Not set'}</div>
+          <div><span style="color:var(--text-dim);">Deadline:</span> ${p.deadline ? new Date(p.deadline).toLocaleDateString() : 'Not set'}</div>
+          <div><span style="color:var(--text-dim);">Description:</span> ${esc(p.description || 'None')}</div>
+        </div>
+      `;
+
+      // Progress
+      document.getElementById('projectProgress').innerHTML = `
+        <div style="display:flex;align-items:center;gap:var(--space-md);margin-bottom:var(--space-sm);">
+          <input type="range" min="0" max="100" value="${p.progress}" style="flex:1;accent-color:var(--accent);" onchange="updateProjectProgress('${id}',this.value)">
+          <span style="font-weight:700;color:var(--accent);min-width:40px;text-align:right;">${p.progress}%</span>
+        </div>
+        <div style="font-size:var(--text-xs);color:var(--text-dim);">Drag to update progress</div>
+      `;
+
+      // Updates
+      document.getElementById('projectUpdates').innerHTML = p.updates.length
+        ? p.updates.map(u => `<div style="padding:var(--space-md) 0;border-bottom:1px solid var(--border);"><div style="display:flex;justify-content:space-between;margin-bottom:4px;"><strong style="font-size:var(--text-sm);">${esc(u.title)}</strong><span style="font-size:var(--text-xs);color:var(--text-dim);">${new Date(u.createdAt).toLocaleDateString()}</span></div><p style="font-size:var(--text-sm);color:var(--text-dim);">${esc(u.content)}</p></div>`).join('')
+        : '<p style="color:var(--text-dim);font-size:var(--text-sm);">No updates yet.</p>';
+
+      // Messages
+      document.getElementById('projectMessages').innerHTML = p.messages.length
+        ? p.messages.map(m => `<div style="padding:8px 12px;border-radius:12px;max-width:80%;${m.sender==='admin'?'background:var(--accent);color:#111;align-self:flex-end;border-bottom-right-radius:4px;':'background:var(--bg-soft);border:1px solid var(--border);align-self:flex-start;border-bottom-left-radius:4px;'}"><div style="font-size:var(--text-xs);font-weight:600;margin-bottom:2px;opacity:.7;">${esc(m.senderName)}</div><div style="font-size:var(--text-sm);">${esc(m.content)}</div></div>`).join('')
+        : '<p style="color:var(--text-dim);font-size:var(--text-sm);">No messages yet.</p>';
+      document.getElementById('projectMessages').scrollTop = document.getElementById('projectMessages').scrollHeight;
+    };
+
+    window.closeProjectDetail = () => {
+      document.getElementById('projectDetail').style.display = 'none';
+      document.getElementById('projectsTable').parentElement.parentElement.querySelector('.admin-header').style.display = '';
+      document.getElementById('projectStats').style.display = '';
+      document.getElementById('projectsTable').parentElement.parentElement.querySelector('.admin-panel').style.display = '';
+      loadProjects();
+    };
+
+    window.updateProjectStatus = async (id, status) => {
+      await adminFetch(API + '/projects/' + id, { method: 'PUT', headers: authHeaders(), body: JSON.stringify({ status }) });
+      showToast('Status updated!');
+    };
+
+    window.updateProjectProgress = async (id, progress) => {
+      await adminFetch(API + '/projects/' + id, { method: 'PUT', headers: authHeaders(), body: JSON.stringify({ progress: parseInt(progress) }) });
+      showToast('Progress updated!');
+      openProject(id);
+    };
+
+    window.deleteProject = async (id) => {
+      if (!confirm('Delete this project and all its data?')) return;
+      await adminFetch(API + '/projects/' + id, { method: 'DELETE' });
+      showToast('Project deleted.');
+      closeProjectDetail();
+    };
+
+    window.addProjectUpdate = async () => {
+      if (!currentProjectId) return;
+      const title = document.getElementById('updateTitle').value.trim();
+      const content = document.getElementById('updateContent').value.trim();
+      if (!title || !content) return showToast('Fill in title and content.', 'error');
+      await adminFetch(API + '/projects/' + currentProjectId + '/updates', { method: 'POST', headers: authHeaders(), body: JSON.stringify({ title, content }) });
+      document.getElementById('updateTitle').value = '';
+      document.getElementById('updateContent').value = '';
+      showToast('Update posted!');
+      openProject(currentProjectId);
+    };
+
+    window.sendProjectMessage = async () => {
+      if (!currentProjectId) return;
+      const content = document.getElementById('projectMsgInput').value.trim();
+      if (!content) return;
+      await adminFetch(API + '/client-messages', { method: 'POST', headers: authHeaders(), body: JSON.stringify({ projectId: currentProjectId, content, sender: 'admin', senderName: 'Admin' }) });
+      document.getElementById('projectMsgInput').value = '';
+      openProject(currentProjectId);
+    };
+
+    window.closeNewProject = () => {
+      document.getElementById('newProjectForm').style.display = 'none';
+      document.getElementById('projectsTable').parentElement.parentElement.querySelector('.admin-header').style.display = '';
+      document.getElementById('projectStats').style.display = '';
+      document.getElementById('projectsTable').parentElement.parentElement.querySelector('.admin-panel').style.display = '';
+    };
+
+    document.getElementById('addProjectBtn2')?.addEventListener('click', () => {
+      document.getElementById('newProjectForm').style.display = 'block';
+      document.getElementById('projectDetail').style.display = 'none';
+      document.getElementById('projectsTable').parentElement.parentElement.querySelector('.admin-header').style.display = 'none';
+      document.getElementById('projectStats').style.display = 'none';
+      document.getElementById('projectsTable').parentElement.parentElement.querySelector('.admin-panel').style.display = 'none';
+    });
+
+    window.createProject = async () => {
+      const data = {
+        title: document.getElementById('npTitle').value.trim(),
+        clientName: document.getElementById('npClientName').value.trim(),
+        clientEmail: document.getElementById('npClientEmail').value.trim(),
+        description: document.getElementById('npDescription').value.trim(),
+        status: document.getElementById('npStatus').value,
+        priority: document.getElementById('npPriority').value,
+        budget: document.getElementById('npBudget').value.trim(),
+        startDate: document.getElementById('npStartDate').value || null,
+        deadline: document.getElementById('npDeadline').value || null,
+      };
+      if (!data.title || !data.clientName || !data.clientEmail) return showToast('Title, client name, and email are required.', 'error');
+      await adminFetch(API + '/projects', { method: 'POST', headers: authHeaders(), body: JSON.stringify(data) });
+      showToast('Project created!');
+      document.getElementById('npTitle').value = '';
+      document.getElementById('npClientName').value = '';
+      document.getElementById('npClientEmail').value = '';
+      document.getElementById('npDescription').value = '';
+      document.getElementById('npBudget').value = '';
+      closeNewProject();
+      loadProjects();
+    };
+
+    // ==================== CLIENT MESSAGES ====================
+    async function loadClientMessages() {
+      const data = await adminFetch(API + '/client-messages');
+      if (!data) return;
+      const badge = document.getElementById('unreadBadge');
+      if (data.unread > 0) { badge.style.display = ''; badge.textContent = data.unread + ' unread'; }
+      else { badge.style.display = 'none'; }
+
+      document.getElementById('clientMessagesTable').innerHTML = data.messages.length
+        ? `<table class="admin-table"><thead><tr><th>From</th><th>Project</th><th>Message</th><th>Time</th><th>Status</th></tr></thead><tbody>${data.messages.map(m => `<tr>
+            <td><div style="font-weight:600;font-size:var(--text-sm);">${esc(m.senderName)}</div><div style="font-size:var(--text-xs);color:var(--text-dim);">${esc(m.senderEmail || '')}</div></td>
+            <td style="font-size:var(--text-sm);">${m.project ? esc(m.project.title) : '<span style="color:var(--text-dim);">—</span>'}</td>
+            <td style="max-width:250px;overflow:hidden;text-overflow:ellipsis;font-size:var(--text-sm);">${esc(m.content)}</td>
+            <td style="font-size:var(--text-xs);color:var(--text-dim);">${new Date(m.createdAt).toLocaleString()}</td>
+            <td>${m.read ? '<span class="status-badge status-badge--read">Read</span>' : '<span class="status-badge status-badge--new">New</span>'}</td>
+          </tr>`).join('')}</tbody></table>`
+        : '<p style="color:var(--text-dim);text-align:center;padding:var(--space-2xl);">No client messages yet.</p>';
+    }
+
+    async function loadDashboard() {
+      const data = await adminFetch(API + '/dashboard');
+      if (!data) return;
+      document.getElementById('statsGrid').innerHTML = `
+        <div class="stat-card"><div class="stat-card__label">Total Leads</div><div class="stat-card__value">${data.leadCount}</div></div>
+        <div class="stat-card"><div class="stat-card__label">New Messages</div><div class="stat-card__value">${data.newLeads}</div></div>
+        <div class="stat-card"><div class="stat-card__label">Registered Users</div><div class="stat-card__value">${data.userCount}</div></div>
+        <div class="stat-card"><div class="stat-card__label">Successful Logins</div><div class="stat-card__value">${data.successfulLogins}</div></div>
+      `;
+      document.getElementById('recentLeads').innerHTML = data.recentLeads.length
+        ? `<table class="admin-table"><thead><tr><th>Name</th><th>Email</th><th>Type</th><th>Date</th><th>Status</th></tr></thead><tbody>${data.recentLeads.map(m => `<tr><td>${esc(m.name)}</td><td>${esc(m.email)}</td><td>${esc(m.projectType)}</td><td>${new Date(m.createdAt).toLocaleDateString()}</td><td><span class="status-badge status-badge--${m.status}">${m.status}</span></td></tr>`).join('')}</tbody></table>`
+        : '<p style="color:var(--color-text-muted);">No leads yet.</p>';
+    }
+
+    async function loadMessages() {
+      const data = await adminFetch(API + '/messages');
+      if (!data) return;
+      document.getElementById('messagesTable').innerHTML = data.messages.length
+        ? `<table class="admin-table"><thead><tr><th>Name</th><th>Email</th><th>Type</th><th>Budget</th><th>Message</th><th>Date</th><th>Status</th><th>Actions</th></tr></thead><tbody>${data.messages.map(m => `<tr><td>${esc(m.name)}</td><td>${esc(m.email)}</td><td>${esc(m.projectType)}</td><td>${esc(m.budget||'-')}</td><td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;">${esc(m.message)}</td><td>${new Date(m.createdAt).toLocaleDateString()}</td><td><span class="status-badge status-badge--${m.status}">${m.status}</span></td><td><button class="btn btn--ghost btn--sm" onclick="markRead('${m.id}')">Read</button> <button class="btn btn--ghost btn--sm" onclick="deleteMessage('${m.id}')" style="color:var(--color-error);">Del</button></td></tr>`).join('')}</tbody></table>`
+        : '<p style="color:var(--color-text-muted);">No messages.</p>';
+    }
+
+    window.markRead = async (id) => {
+      await adminFetch(API + '/messages/' + id, { method: 'PATCH', headers: authHeaders(), body: JSON.stringify({ status: 'read' }) });
+      loadMessages();
+    };
+
+    window.deleteMessage = async (id) => {
+      if (!confirm('Delete this message?')) return;
+      await adminFetch(API + '/messages/' + id, { method: 'DELETE' });
+      loadMessages();
+    };
+
+    async function loadUsers() {
+      const data = await adminFetch(API + '/users');
+      if (!data) return;
+      document.getElementById('usersTable').innerHTML = data.users.length
+        ? `<table class="admin-table"><thead><tr><th>Name</th><th>Email</th><th>Provider</th><th>Role</th><th>Joined</th></tr></thead><tbody>${data.users.map(u => `<tr><td>${esc(u.firstName)} ${esc(u.lastName)}</td><td>${esc(u.email)}</td><td>${esc(u.provider)}</td><td><span class="tag ${u.role==='admin'?'tag--accent':''}">${u.role}</span></td><td>${new Date(u.createdAt).toLocaleDateString()}</td></tr>`).join('')}</tbody></table>`
+        : '<p style="color:var(--color-text-muted);">No users.</p>';
+    }
+
+    async function loadLoginLogs() {
+      const data = await adminFetch(API + '/login-logs');
+      if (!data) return;
+      document.getElementById('loginLogsTable').innerHTML = data.logs.length
+        ? `<table class="admin-table"><thead><tr><th>Email</th><th>Provider</th><th>Status</th><th>IP</th><th>Device</th><th>Time</th></tr></thead><tbody>${data.logs.map(l => `<tr><td>${esc(l.email)}</td><td>${esc(l.provider)}</td><td><span class="status-badge status-badge--${l.status==='success'?'read':'new'}">${l.status}</span></td><td>${esc(l.ip||'-')}</td><td style="max-width:150px;overflow:hidden;text-overflow:ellipsis;">${esc(l.device||'-')}</td><td>${new Date(l.createdAt).toLocaleString()}</td></tr>`).join('')}</tbody></table>`
+        : '<p style="color:var(--color-text-muted);">No login logs.</p>';
+    }
+
+    async function loadChatMetrics() {
+      const data = await adminFetch(API + '/chat-metrics');
+      if (!data) return;
+      document.getElementById('chatStats').innerHTML = `
+        <div class="stat-card"><div class="stat-card__label">Total Sessions</div><div class="stat-card__value">${data.sessionCount}</div></div>
+        <div class="stat-card"><div class="stat-card__label">Total Messages</div><div class="stat-card__value">${data.messageCount}</div></div>
+      `;
+    }
+
+    async function loadPortfolioCMS() {
+      const data = await adminFetch(API + '/portfolio');
+      if (!data) return;
+      document.getElementById('portfolioTable').innerHTML = data.projects.length
+        ? `<table class="admin-table"><thead><tr><th>Title</th><th>Category</th><th>Featured</th><th>Image</th><th>Actions</th></tr></thead><tbody>${data.projects.map(p => `<tr><td>${esc(p.title)}</td><td>${esc(p.category)}</td><td>${p.featured?'✅':'-'}</td><td>${p.imageUrl?'✅':'❌'}</td><td><button class="btn btn--ghost btn--sm" onclick="editProject('${p.id}')">Edit</button> <button class="btn btn--ghost btn--sm" onclick="deleteProject('${p.id}')" style="color:var(--color-error);">Del</button></td></tr>`).join('')}</tbody></table>`
+        : '<p style="color:var(--color-text-muted);">No projects.</p>';
+    }
+
+    async function loadPricingCMS() {
+      const data = await adminFetch(API + '/pricing');
+      if (!data) return;
+      document.getElementById('pricingTable').innerHTML = data.plans.length
+        ? `<table class="admin-table"><thead><tr><th>Name</th><th>Price</th><th>Highlighted</th><th>Actions</th></tr></thead><tbody>${data.plans.map(p => `<tr><td>${esc(p.name)}</td><td>${esc(p.price)}</td><td>${p.highlighted?'✅':'-'}</td><td><button class="btn btn--ghost btn--sm" onclick="editPlan('${p.id}')">Edit</button> <button class="btn btn--ghost btn--sm" onclick="deletePlan('${p.id}')" style="color:var(--color-error);">Del</button></td></tr>`).join('')}</tbody></table>`
+        : '<p style="color:var(--color-text-muted);">No plans.</p>';
+    }
+
+    async function loadTestimonialsCMS() {
+      const data = await adminFetch(API + '/testimonials');
+      if (!data) return;
+      document.getElementById('testimonialsTable').innerHTML = data.testimonials.length
+        ? `<table class="admin-table"><thead><tr><th>Name</th><th>Company</th><th>Rating</th><th>Actions</th></tr></thead><tbody>${data.testimonials.map(t => `<tr><td>${esc(t.name)}</td><td>${esc(t.company)}</td><td>${'⭐'.repeat(t.rating)}</td><td><button class="btn btn--ghost btn--sm" onclick="editTestimonial('${t.id}')">Edit</button> <button class="btn btn--ghost btn--sm" onclick="deleteTestimonial('${t.id}')" style="color:var(--color-error);">Del</button></td></tr>`).join('')}</tbody></table>`
+        : '<p style="color:var(--color-text-muted);">No testimonials.</p>';
+    }
+
+    async function loadChatbotConfig() {
+      const data = await adminFetch(API + '/chatbot-config');
+      if (!data) return;
+      const cfg = data.config;
+
+      // Format services as readable list
+      const servicesList = (cfg.services || []).map(s => `• ${s.name}: ${s.description}`).join('\n');
+      const pricingList = (cfg.pricing || []).map(p => `• ${p.name} (${p.price}): ${(p.features || []).join(', ')}${p.highlighted ? ' [MOST POPULAR]' : ''}`).join('\n');
+      const faqsList = (cfg.faqs || []).map(f => `Q: ${f.q}\nA: ${f.a}`).join('\n\n');
+
+      document.getElementById('chatbotConfigPanel').innerHTML = `
+        <div style="background:rgba(245,197,24,0.05);border:1px solid rgba(245,197,24,0.2);border-radius:var(--radius-md);padding:var(--space-lg);margin-bottom:var(--space-xl);">
+          <div style="display:flex;align-items:center;gap:var(--space-sm);margin-bottom:var(--space-sm);">
+            <span style="font-size:1.2rem;">💡</span>
+            <strong style="font-size:var(--text-sm);">How this works</strong>
+          </div>
+          <p style="font-size:var(--text-sm);color:var(--color-text-secondary);margin:0;">Editing this data updates what the AI knows <strong>immediately</strong> — no code changes or redeploy needed. Every new chat message rebuilds the AI's instructions from this data. The AI is NOT fine-tuned — it's prompt-based knowledge that updates live from the database.</p>
+        </div>
+
+        <div class="config-editor">
+          <div class="config-editor__label">Services (one per line, format: "Name: Description")</div>
+          <textarea class="input" id="cfgServices" rows="6" placeholder="Web Design: Custom premium website design...">${esc(servicesList)}</textarea>
+        </div>
+
+        <div class="config-editor">
+          <div class="config-editor__label">Pricing Tiers (one per line, format: "Name ($price): features, separated by commas")</div>
+          <textarea class="input" id="cfgPricing" rows="5" placeholder="Starter ($999): 5-page website, basic SEO...">${esc(pricingList)}</textarea>
+        </div>
+
+        <div class="config-editor">
+          <div class="config-editor__label">FAQs (format: "Q: question\nA: answer" — separate each FAQ with a blank line)</div>
+          <textarea class="input" id="cfgFaqs" rows="10" placeholder="Q: How long does a project take?&#10;A: Typically 2-6 weeks...">${esc(faqsList)}</textarea>
+        </div>
+
+        <div class="config-editor">
+          <div class="config-editor__label">Working Hours</div>
+          <input type="text" class="input" id="cfgHours" value='${esc(JSON.stringify(cfg.working_hours || {}))}' placeholder='{"weekdays":"9AM-6PM","weekends":"Closed"}'>
+        </div>
+
+        <div class="config-editor">
+          <div class="config-editor__label">Company Info</div>
+          <input type="text" class="input" id="cfgCompany" value='${esc(JSON.stringify(cfg.company_info || {}))}' placeholder='{"name":"Webore","email":"webore1007@gmail.com"}'>
+        </div>
+
+        <button class="btn btn--primary" id="saveConfigBtn">Save Configuration</button>
+
+        <div style="margin-top:var(--space-2xl);padding-top:var(--space-xl);border-top:1px solid var(--color-border);">
+          <h3 style="margin-bottom:var(--space-md);">Test the AI</h3>
+          <p style="font-size:var(--text-sm);color:var(--color-text-secondary);margin-bottom:var(--space-md);">Try out changes to the config and see how the AI responds before real visitors do.</p>
+          <div class="admin-panel" style="background:var(--color-bg-secondary);padding:var(--space-lg);margin:0;">
+            <div id="adminTestChatMessages" style="min-height:120px;max-height:240px;overflow-y:auto;margin-bottom:var(--space-md);display:flex;flex-direction:column;gap:var(--space-sm);">
+              <div class="chat-msg chat-msg--bot"><div class="chat-msg__bubble">Ask me anything about Webore's services, pricing, or process.</div></div>
+            </div>
+            <form id="adminTestChatForm" style="display:flex;gap:var(--space-sm);">
+              <input type="text" class="input" id="adminTestChatInput" placeholder="Test the AI..." style="flex:1;">
+              <button type="submit" class="btn btn--primary btn--sm">Send</button>
+            </form>
+          </div>
+        </div>
+      `;
+
+      // Save config handler
+      document.getElementById('saveConfigBtn')?.addEventListener('click', async () => {
+        try {
+          // Parse human-readable format back to structured data
+          const servicesLines = document.getElementById('cfgServices').value.trim().split('\n').filter(l => l.trim());
+          const services = servicesLines.map(line => {
+            const match = line.replace(/^•\s*/, '').match(/^(.+?):\s*(.+)$/);
+            return match ? { name: match[1].trim(), description: match[2].trim() } : { name: line.trim(), description: '' };
+          });
+
+          const pricingLines = document.getElementById('cfgPricing').value.trim().split('\n').filter(l => l.trim());
+          const pricing = pricingLines.map(line => {
+            const match = line.replace(/^•\s*/, '').match(/^(.+?)\s*\((.+?)\):\s*(.+)$/);
+            if (!match) return null;
+            const highlighted = match[3].includes('[MOST POPULAR]');
+            return { name: match[1].trim(), price: match[2].trim(), features: match[3].replace('[MOST POPULAR]', '').split(',').map(f => f.trim()).filter(Boolean), highlighted };
+          }).filter(Boolean);
+
+          const faqsRaw = document.getElementById('cfgFaqs').value.trim();
+          const faqs = faqsRaw.split(/\n\n+/).filter(Boolean).map(block => {
+            const lines = block.split('\n');
+            const qLine = lines.find(l => l.trim().startsWith('Q:'));
+            const aLine = lines.find(l => l.trim().startsWith('A:'));
+            return { q: qLine ? qLine.replace(/^Q:\s*/, '').trim() : '', a: aLine ? aLine.replace(/^A:\s*/, '').trim() : '' };
+          }).filter(f => f.q && f.a);
+
+          const updates = {
+            working_hours: JSON.parse(document.getElementById('cfgHours').value || '{}'),
+            company_info: JSON.parse(document.getElementById('cfgCompany').value || '{}'),
+            faqs,
+            services,
+            pricing,
+          };
+          await adminFetch(API + '/chatbot-config', { method: 'PUT', headers: authHeaders(), body: JSON.stringify(updates) });
+          showToast('Config saved! AI will use this data immediately.');
+        } catch (e) {
+          showToast('Error: ' + e.message, 'error');
+        }
+      });
+
+      // Test AI chat handler
+      let testSessionId = null;
+      document.getElementById('adminTestChatForm')?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const input = document.getElementById('adminTestChatInput');
+        const text = input.value.trim();
+        if (!text) return;
+        const msgs = document.getElementById('adminTestChatMessages');
+
+        // User message
+        const userDiv = document.createElement('div');
+        userDiv.className = 'chat-msg chat-msg--user';
+        userDiv.innerHTML = `<div class="chat-msg__bubble">${esc(text)}</div>`;
+        msgs.appendChild(userDiv);
+        input.value = '';
+
+        // Typing indicator
+        const typingDiv = document.createElement('div');
+        typingDiv.className = 'chat-msg chat-msg--bot';
+        typingDiv.innerHTML = '<div class="chat-msg__bubble"><div class="typing-dots"><span></span><span></span><span></span></div></div>';
+        msgs.appendChild(typingDiv);
+        msgs.scrollTop = msgs.scrollHeight;
+
+        try {
+          const res = await fetch('/api/chat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ message: text, sessionId: testSessionId }), credentials: 'include' });
+          const result = await res.json();
+          typingDiv.remove();
+          if (result.sessionId) testSessionId = result.sessionId;
+          const botDiv = document.createElement('div');
+          botDiv.className = 'chat-msg chat-msg--bot';
+          const formatted = result.reply.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+          botDiv.innerHTML = `<div class="chat-msg__bubble">${formatted}</div>`;
+          msgs.appendChild(botDiv);
+          msgs.scrollTop = msgs.scrollHeight;
+        } catch {
+          typingDiv.remove();
+          const errDiv = document.createElement('div');
+          errDiv.className = 'chat-msg chat-msg--bot';
+          errDiv.innerHTML = '<div class="chat-msg__bubble">Error connecting to chat.</div>';
+          msgs.appendChild(errDiv);
+        }
+      });
+    }
+
+    // Image search
+    document.getElementById('imageSearchBtn')?.addEventListener('click', async () => {
+      const q = document.getElementById('imageSearchQuery').value.trim();
+      if (!q) return;
+      const res = await fetch('/api/images/search?query=' + encodeURIComponent(q), { credentials: 'include' });
+      const data = await res.json();
+      document.getElementById('imageResults').innerHTML = data.images.length
+        ? data.images.map(img => `
+          <div style="border-radius:var(--radius-md);overflow:hidden;border:1px solid var(--color-border);">
+            <img src="${esc(img.thumb)}" alt="${esc(img.alt)}" style="width:100%;aspect-ratio:4/3;object-fit:cover;" loading="lazy">
+            <div style="padding:var(--space-sm);font-size:var(--text-xs);color:var(--color-text-muted);">${esc(img.attribution)}</div>
+          </div>
+        `).join('')
+        : '<p style="color:var(--color-text-muted);grid-column:1/-1;">No images found. Configure IMAGE_API_KEY in your .env file.</p>';
+    });
+
+    function esc(s) { if (!s) return ''; const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+
+    // Init
+    checkAdmin();
+  </script>
+</body>
+</html>

@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex">
+  <title>Page Not Found — Webore</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/variables.css">
+  <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="/css/layout.css">
+  <link rel="stylesheet" href="/css/components.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>">
+</head>
+<body>
+  <nav class="nav" id="nav" aria-label="Main navigation">
+    <a href="/" class="nav__logo">Web<span>ore</span></a>
+    <nav class="nav__desktop"><a href="/" class="nav__link">Home</a><a href="/portfolio" class="nav__link">Work</a><a href="/services" class="nav__link">Services</a><a href="/pricing" class="nav__link">Pricing</a><a href="/contact" class="nav__link">Contact</a></nav>
+    <div class="nav__actions"><a href="/" class="btn btn--ghost btn--sm">← Back Home</a></div>
+  </nav>
+
+  <main style="min-height:100vh;display:flex;align-items:center;justify-content:center;text-align:center;padding:6rem 2rem;">
+    <div>
+      <div style="font-size:clamp(5rem,15vw,10rem);font-family:var(--font-display);font-weight:900;line-height:1;letter-spacing:-0.05em;color:var(--card);">404</div>
+      <h1 style="font-size:clamp(1.5rem,3vw,2.2rem);margin-bottom:1rem;margin-top:-0.5rem;">Page Not Found</h1>
+      <p style="max-width:400px;margin:0 auto 2rem;color:var(--text-dim);">Looks like this page wandered off into the cloud. Let's get you back somewhere useful.</p>
+      <div style="display:flex;gap:14px;justify-content:center;flex-wrap:wrap;">
+        <a href="/" class="btn btn--primary btn--lg">Go Home</a>
+        <a href="/contact" class="btn btn--secondary btn--lg">Contact Us</a>
+      </div>
+    </div>
+  </main>
+  <script>
+    window.addEventListener('scroll',function(){document.getElementById('nav').classList.toggle('scrolled',window.scrollY>40);},{passive:true});
+  </script>
+</body>
+</html>

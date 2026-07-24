@@ -1,0 +1,20 @@
+# Database
+*.db
+*.db-journal
+
+# Dependencies
+node_modules/
+
+# Environment
+.env
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Prisma
+server/prisma/migrations/

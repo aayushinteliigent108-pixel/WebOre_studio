@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="About Webore — Our story, values, and the team of 4 behind every project. Results First. No Compromises. True Partnership.">
+  <title>About — Webore</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/variables.css">
+  <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="/css/layout.css">
+  <link rel="stylesheet" href="/css/components.css">
+  <link rel="stylesheet" href="/css/animations.css">
+  <link rel="stylesheet" href="/css/responsive.css">
+  <link rel="stylesheet" href="/css/chat.css">
+  <link rel="stylesheet" href="/css/modal.css">
+  <link rel="stylesheet" href="/css/pages.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>">
+</head>
+<body>
+  <div class="cursor-glow" aria-hidden="true"></div>
+
+  <nav class="nav" id="nav" aria-label="Main navigation">
+    <a href="/" class="nav__logo" aria-label="Webore Home">Web<span>ore</span></a>
+    <nav class="nav__desktop" aria-label="Site links">
+      <a href="/" class="nav__link">Home</a>
+      <a href="/portfolio" class="nav__link">Work</a>
+      <a href="/services" class="nav__link">Services</a>
+      <a href="/pricing" class="nav__link">Pricing</a>
+      <a href="/about" class="nav__link nav__link--active" aria-current="page">About</a>
+      <a href="/contact" class="nav__link">Contact</a>
+      <a href="/dashboard" id="dashboardLink" class="nav__link" style="display:none;">Dashboard</a>
+    </nav>
+    <div class="nav__actions">
+      <span id="authButtons"><a href="#" class="btn btn--ghost btn--sm" id="loginBtn">Login</a></span>
+      <span id="authAvatar" style="display:none;" class="nav__auth-btn"><div class="avatar" id="userAvatar" role="img" aria-label="User avatar"></div></span>
+      <button class="nav__menu-btn" id="menuBtn" aria-label="Open menu" aria-expanded="false" aria-controls="navOverlay">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="20" y2="17"/></svg>
+      </button>
+    </div>
+  </nav>
+  <div class="nav-overlay" id="navOverlay" role="dialog" aria-label="Navigation menu" aria-hidden="true">
+    <button class="nav-overlay__close" id="menuClose" aria-label="Close menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/></svg></button>
+    <nav class="nav-overlay__links" role="navigation">
+      <a href="/" class="nav-overlay__link">Home</a>
+      <a href="/portfolio" class="nav-overlay__link">Work</a>
+      <a href="/services" class="nav-overlay__link">Services</a>
+      <a href="/pricing" class="nav-overlay__link">Pricing</a>
+      <a href="/about" class="nav-overlay__link nav-overlay__link--active" aria-current="page">About</a>
+      <a href="/contact" class="nav-overlay__link">Contact</a>
+      <a href="/dashboard" id="mobileDashboardLink" class="nav-overlay__link" style="display:none;">Dashboard</a>
+      <div class="nav-overlay__cta"><a href="/contact" class="btn btn--primary btn--lg">Start a Project</a></div>
+    </nav>
+  </div>
+
+  <main>
+    <!-- Page Hero -->
+    <section class="page-hero" aria-label="About hero">
+      <div class="eyebrow sr sr--up"><span class="dot"></span>Our Story</div>
+      <h1 class="sr sr--up">We Build the <span class="text-accent">Web of Tomorrow</span></h1>
+      <p class="sr sr--up">A small, intensely focused studio that punches way above its weight. Every project, every pixel, every line of code — by humans who actually care.</p>
+    </section>
+
+    <!-- Story Section -->
+    <section class="section" style="padding-top:0;">
+      <div class="container">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-4xl);align-items:center;" class="sr sr--up">
+          <div>
+            <p class="section-label" style="margin-bottom:0.75rem;">Founded 2021</p>
+            <h2 style="font-size:clamp(1.8rem,3vw,2.5rem);margin-bottom:1.25rem;">How It Started</h2>
+            <p style="margin-bottom:1.25rem;line-height:1.8;">Webore was born from a simple frustration: brilliant businesses being sold mediocre websites. In 2021, a small team came together to change that — building premium digital experiences that reflect the true quality of our clients' work.</p>
+            <p style="margin-bottom:1.25rem;line-height:1.8;">We started with one client and a shared belief that the web deserves better craft. Three years and over 100 projects later, that belief hasn't changed — only our scope has.</p>
+            <p style="line-height:1.8;">Today, Webore operates globally, working with businesses from independent studios in Indore to funded startups in Silicon Valley.</p>
+          </div>
+          <div style="position:relative;">
+            <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--radius-xl);padding:var(--space-2xl);display:flex;flex-direction:column;gap:var(--space-lg);">
+              <div style="display:flex;align-items:center;gap:var(--space-lg);">
+                <div style="font-size:2.5rem;font-family:var(--font-display);font-weight:700;color:var(--accent);min-width:80px;">100+</div>
+                <p style="margin:0;color:var(--text-dim);">Projects shipped for clients across India, USA, UAE &amp; beyond</p>
+              </div>
+              <div style="height:1px;background:var(--border);"></div>
+              <div style="display:flex;align-items:center;gap:var(--space-lg);">
+                <div style="font-size:2.5rem;font-family:var(--font-display);font-weight:700;color:var(--accent);min-width:80px;">99%</div>
+                <p style="margin:0;color:var(--text-dim);">Client satisfaction score across all engagements</p>
+              </div>
+              <div style="height:1px;background:var(--border);"></div>
+              <div style="display:flex;align-items:center;gap:var(--space-lg);">
+                <div style="font-size:2.5rem;font-family:var(--font-display);font-weight:700;color:var(--accent);min-width:80px;">8+</div>
+                <p style="margin:0;color:var(--text-dim);">Years of combined industry experience on every project</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Values -->
+    <section class="section" style="background:var(--bg-soft);">
+      <div class="container">
+        <div class="section-header sr sr--up">
+          <div class="section-divider"></div>
+          <p class="section-label">What We Stand For</p>
+          <h2>Our Core <span class="text-accent">Values</span></h2>
+          <p>Three principles guide every project, every conversation, every line of code.</p>
+        </div>
+        <div class="values-grid reveal-stagger">
+          <div class="value-card">
+            <div class="value-card__icon">🎯</div>
+            <h3 class="value-card__title">Results First</h3>
+            <p class="value-card__text">We don't build pretty things that don't convert. Every design decision is made with your business outcomes in mind — more leads, more sales, more growth.</p>
+          </div>
+          <div class="value-card">
+            <div class="value-card__icon">⚡</div>
+            <h3 class="value-card__title">No Compromises</h3>
+            <p class="value-card__text">We don't cut corners or ship half-baked products. If it's not ready, it doesn't go out. Quality isn't negotiable — it's the baseline.</p>
+          </div>
+          <div class="value-card">
+            <div class="value-card__icon">🤝</div>
+            <h3 class="value-card__title">True Partnership</h3>
+            <p class="value-card__text">We're not a vendor — we're an extension of your team. We invest in understanding your business deeply enough to build it right the first time.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="section" style="background:var(--bg-soft);">
+      <div class="container">
+        <div class="cta-banner sr sr--scale">
+          <h2>Let's Build Something <span class="text-accent">Together</span></h2>
+          <p style="max-width:480px;margin:0 auto var(--space-xl);">We take on a small number of projects each quarter to ensure every client gets our full attention. Book your spot today.</p>
+          <a href="/contact" class="btn btn--primary btn--lg">Start Your Project →</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer" role="contentinfo">
+    <div class="footer__grid" style="max-width:var(--container-max);margin:0 auto;">
+      <div class="footer__brand"><div class="footer__brand-name">Web<span>ore</span></div><p class="footer__brand-text">Premium creative digital studio. We build high-end websites that convert visitors into clients.</p></div>
+      <div><div class="footer__col-title">Services</div><a href="/services" class="footer__link">Web Design</a><a href="/services" class="footer__link">Development</a><a href="/services" class="footer__link">E-commerce</a><a href="/services" class="footer__link">SEO</a><a href="/services" class="footer__link">Branding</a></div>
+      <div><div class="footer__col-title">Company</div><a href="/about" class="footer__link">About</a><a href="/portfolio" class="footer__link">Portfolio</a><a href="/pricing" class="footer__link">Pricing</a><a href="/contact" class="footer__link">Contact</a></div>
+      <div><div class="footer__col-title">Legal</div><a href="/policy" class="footer__link">Privacy Policy</a><a href="/policies" class="footer__link">Terms of Service</a></div>
+    </div>
+    <div class="footer__bottom" style="max-width:var(--container-max);margin:0 auto;"><span>&copy; 2026 Webore. All rights reserved.</span><span>Built with passion.</span></div>
+  </footer>
+
+  <div id="chatWidget" class="chat-widget" aria-label="Chat with Webore">
+    <button class="chat-widget__toggle" id="chatToggle" aria-label="Open chat" aria-expanded="false" aria-controls="chatPanel"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></button>
+    <div class="chat-panel" id="chatPanel" role="dialog" aria-label="Chat with Webore" aria-hidden="true">
+      <div class="chat-panel__header">
+        <div style="display:flex;align-items:center;gap:12px;"><div class="avatar avatar--lg" style="background:var(--accent);color:#0a0a0b;">W</div><div><div style="font-weight:600;">Webore AI</div><div style="font-size:var(--text-xs);color:var(--color-success);">● Online</div></div></div>
+        <button class="chat-panel__close" id="chatClose" aria-label="Close chat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/></svg></button>
+      </div>
+      <div class="chat-panel__messages" id="chatMessages"><div class="chat-msg chat-msg--bot"><div class="chat-msg__bubble">Hey! 👋 I'm the Webore assistant. How can I help you today?</div></div></div>
+      <form class="chat-panel__input" id="chatForm">
+        <input type="text" class="input" id="chatInput" placeholder="Type a message..." autocomplete="off" aria-label="Type a message">
+        <button type="submit" class="btn btn--primary btn--icon" aria-label="Send message"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg></button>
+      </form>
+    </div>
+  </div>
+  <div id="toast" class="toast" role="alert" aria-live="polite"></div>
+  <script type="module" src="/js/main.js"></script>
+  <script>
+    (function(){
+      var io=new IntersectionObserver(function(e){e.forEach(function(x){if(x.isIntersecting){x.target.classList.add('in');io.unobserve(x.target);}});},{threshold:0.12});
+      document.querySelectorAll('.sr,.reveal-stagger').forEach(function(el){io.observe(el);});
+      window.addEventListener('scroll',function(){document.getElementById('nav').classList.toggle('scrolled',window.scrollY>40);},{passive:true});
+      var menuBtn=document.getElementById('menuBtn'),menuClose=document.getElementById('menuClose'),overlay=document.getElementById('navOverlay');
+      menuBtn&&menuBtn.addEventListener('click',function(){overlay.classList.add('active');overlay.setAttribute('aria-hidden','false');menuBtn.setAttribute('aria-expanded','true');document.body.style.overflow='hidden';});
+      function closeMenu(){overlay.classList.remove('active');overlay.setAttribute('aria-hidden','true');menuBtn.setAttribute('aria-expanded','false');document.body.style.overflow='';}
+      menuClose&&menuClose.addEventListener('click',closeMenu);
+      overlay&&overlay.querySelectorAll('.nav-overlay__link').forEach(function(l){l.addEventListener('click',closeMenu);});
+      document.addEventListener('keydown',function(e){if(e.key==='Escape'&&overlay&&overlay.classList.contains('active'))closeMenu();});
+    })();
+  </script>
+</body>
+</html>

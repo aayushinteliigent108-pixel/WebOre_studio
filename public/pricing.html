@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Webore Pricing — Transparent pricing for premium web design and development. Starter ₹999, Business ₹2,499, Enterprise ₹4,999.">
+  <title>Pricing — Webore</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/variables.css">
+  <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="/css/layout.css">
+  <link rel="stylesheet" href="/css/components.css">
+  <link rel="stylesheet" href="/css/animations.css">
+  <link rel="stylesheet" href="/css/responsive.css">
+  <link rel="stylesheet" href="/css/chat.css">
+  <link rel="stylesheet" href="/css/modal.css">
+  <link rel="stylesheet" href="/css/pages.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>">
+  <style>
+    /* Pricing page specific styles */
+    .pricing-section {
+      padding-top: var(--space-2xl);
+    }
+    .pricing-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: var(--space-xl);
+      align-items: start;
+    }
+    .pricing-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-xl);
+      padding: var(--space-2xl);
+      position: relative;
+      transition: border-color 0.3s ease, transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.4s ease;
+    }
+    .pricing-card:hover {
+      border-color: rgba(245,130,13,0.2);
+      transform: translateY(-6px);
+      box-shadow: 0 16px 40px rgba(0,0,0,0.3);
+    }
+    .pricing-card--highlighted {
+      background: linear-gradient(145deg, rgba(245,130,13,0.08), var(--card));
+      border-color: rgba(245,130,13,0.35);
+      box-shadow: 0 0 0 1px rgba(245,130,13,0.15), 0 12px 40px rgba(245,130,13,0.12);
+      transform: scale(1.03);
+    }
+    .pricing-card--highlighted:hover {
+      transform: scale(1.03) translateY(-4px);
+    }
+    .pricing-card__popular {
+      position: absolute;
+      top: -14px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--accent);
+      color: #0a0a0b;
+      font-size: var(--text-xs);
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 5px 16px;
+      border-radius: var(--radius-full);
+      white-space: nowrap;
+    }
+    .pricing-card__name {
+      font-family: var(--font-display);
+      font-size: var(--text-xs);
+      font-weight: 600;
+      text-align: center;
+      color: var(--text-dim);
+      margin-bottom: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .pricing-card__price {
+      font-family: var(--font-display);
+      font-size: clamp(2.5rem, 5vw, 3.2rem);
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      text-align: center;
+      color: var(--text);
+      margin-bottom: 0.25rem;
+    }
+    .pricing-card--highlighted .pricing-card__price {
+      color: var(--accent);
+    }
+    .pricing-card__period {
+      text-align: center;
+      font-size: var(--text-xs);
+      color: var(--text-dim);
+      margin-bottom: var(--space-xl);
+    }
+    .pricing-card__features {
+      margin-bottom: var(--space-xl);
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+    .pricing-card__feature {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: var(--text-sm);
+      color: var(--text-dim);
+    }
+    .pricing-card__feature svg {
+      width: 16px;
+      height: 16px;
+      color: var(--accent);
+      flex-shrink: 0;
+    }
+    .pricing-card .btn {
+      width: 100%;
+      justify-content: center;
+    }
+
+    /* Responsive */
+    @media (max-width: 1024px) {
+      .pricing-grid {
+        grid-template-columns: 1fr;
+        max-width: 400px;
+        margin: 0 auto;
+      }
+      .pricing-card--highlighted {
+        transform: none;
+        order: -1;
+      }
+      .pricing-card--highlighted:hover {
+        transform: translateY(-4px);
+      }
+    }
+    @media (max-width: 600px) {
+      .pricing-card {
+        padding: var(--space-xl);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="cursor-glow" aria-hidden="true"></div>
+
+  <nav class="nav" id="nav" aria-label="Main navigation">
+    <a href="/" class="nav__logo" aria-label="Webore Home">Web<span>ore</span></a>
+    <nav class="nav__desktop" aria-label="Site links">
+      <a href="/" class="nav__link">Home</a>
+      <a href="/portfolio" class="nav__link">Work</a>
+      <a href="/services" class="nav__link">Services</a>
+      <a href="/pricing" class="nav__link nav__link--active" aria-current="page">Pricing</a>
+      <a href="/about" class="nav__link">About</a>
+      <a href="/contact" class="nav__link">Contact</a>
+      <a href="/dashboard" id="dashboardLink" class="nav__link" style="display:none;">Dashboard</a>
+    </nav>
+    <div class="nav__actions">
+      <span id="authButtons"><a href="#" class="btn btn--ghost btn--sm" id="loginBtn">Login</a></span>
+      <span id="authAvatar" style="display:none;" class="nav__auth-btn"><div class="avatar" id="userAvatar" role="img" aria-label="User avatar"></div></span>
+      <button class="nav__menu-btn" id="menuBtn" aria-label="Open menu" aria-expanded="false" aria-controls="navOverlay">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="20" y2="17"/></svg>
+      </button>
+    </div>
+  </nav>
+  <div class="nav-overlay" id="navOverlay" role="dialog" aria-label="Navigation menu" aria-hidden="true">
+    <button class="nav-overlay__close" id="menuClose" aria-label="Close menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/></svg></button>
+    <nav class="nav-overlay__links" role="navigation">
+      <a href="/" class="nav-overlay__link">Home</a>
+      <a href="/portfolio" class="nav-overlay__link">Work</a>
+      <a href="/services" class="nav-overlay__link">Services</a>
+      <a href="/pricing" class="nav-overlay__link nav-overlay__link--active" aria-current="page">Pricing</a>
+      <a href="/about" class="nav-overlay__link">About</a>
+      <a href="/contact" class="nav-overlay__link">Contact</a>
+      <a href="/dashboard" id="mobileDashboardLink" class="nav-overlay__link" style="display:none;">Dashboard</a>
+      <div class="nav-overlay__cta"><a href="/contact" class="btn btn--primary btn--lg">Start a Project</a></div>
+    </nav>
+  </div>
+
+  <main>
+    <!-- Page Hero -->
+    <section class="page-hero" aria-label="Pricing hero">
+      <div class="eyebrow sr sr--up"><span class="dot"></span>Pricing</div>
+      <h1 class="sr sr--up">Transparent <span class="text-accent">Pricing</span></h1>
+      <p class="sr sr--up">Simple, honest pricing — no hidden fees. Pick the tier that fits your needs.</p>
+    </section>
+
+    <!-- Pricing Grid -->
+    <section class="section pricing-section" aria-label="Pricing plans">
+      <div class="container">
+        <div class="section-header sr sr--up" style="margin-bottom:var(--space-2xl);">
+          <div class="section-divider"></div>
+          <p class="section-label">Pricing</p>
+          <h2>Simple, Honest <span class="text-accent">Pricing</span></h2>
+          <p>No hidden fees. Pick the plan that fits your needs.</p>
+        </div>
+
+        <div class="pricing-grid">
+          <!-- Starter -->
+          <div class="pricing-card sr sr--up">
+            <div class="pricing-card__name">Starter</div>
+            <div class="pricing-card__price">₹999</div>
+            <div class="pricing-card__period">per project</div>
+            <div class="pricing-card__features">
+              <div class="pricing-card__feature">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                5-page responsive website
+              </div>
+              <div class="pricing-card__feature">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                Basic SEO setup
+              </div>
+              <div class="pricing-card__feature">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                Mobile-first design
+              </div>
+              <div class="pricing-card__feature">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                1 round of revisions
+              </div>
+              <div class="pricing-card__feature">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                2-week delivery
+              </div>
+            </div>
+            <a href="/contact" class="btn btn--secondary">Get Started</a>
+          </div>
+
+          <!-- Business (highlighted) -->
+          <div class="pricing-card pricing-card--highlighted sr sr--up">
+            <div class="pricing-card__popular">Most Popular</div>
+            <div class="pricing-card__name">Business</div>
+            <div class="pricing-card__price">₹2,499</div>
+            <div class="pricing-card__period">per project</div>
+            <div class="pricing-card__features">
+              <div class="pricing-card__feature">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                10-page responsive website
+              </div>
+              <div class="pricing-card__feature">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                Advanced SEO &amp; analytics
+              </div>
+              <div class="pricing-card__feature">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                CMS integration
+              </div>
+              <div class="pricing-card__feature">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                3 rounds of revisions
+              </div>
+              <div class="pricing-card__feature">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                30-day support
+              </div>
+              <div class="pricing-card__feature">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                3–4 week delivery
+              </div>
+            </div>
+            <a href="/contact" class="btn btn--primary">Get Started</a>
+          </div>
+
+          <!-- Enterprise -->
+          <div class="pricing-card sr sr--up">
+            <div class="pricing-card__name">Enterprise</div>
+            <div class="pricing-card__price">₹4,999</div>
+            <div class="pricing-card__period">per project</div>
+            <div class="pricing-card__features">
+              <div class="pricing-card__feature">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                Unlimited pages
+              </div>
+              <div class="pricing-card__feature">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                Custom features &amp; integrations
+              </div>
+              <div class="pricing-card__feature">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                E-commerce ready
+              </div>
+              <div class="pricing-card__feature">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                Unlimited revisions
+              </div>
+              <div class="pricing-card__feature">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                90-day maintenance
+              </div>
+              <div class="pricing-card__feature">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                Priority support
+              </div>
+            </div>
+            <a href="/contact" class="btn btn--secondary">Get Started</a>
+          </div>
+        </div>
+
+        <div class="text-center sr sr--up" style="margin-top:var(--space-3xl);">
+          <p style="font-size:var(--text-lg);color:var(--text-dim);margin-bottom:var(--space-lg);">Need something custom? We'd love to talk about your project.</p>
+          <a href="/contact" class="btn btn--primary btn--lg">Get a Custom Quote</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- FAQ -->
+    <section class="section" style="background:var(--bg-soft);" id="pricing-faq" aria-label="Pricing FAQ">
+      <div class="container" style="max-width:800px;">
+        <div class="section-header sr sr--up" style="margin-bottom:var(--space-2xl);">
+          <div class="section-divider"></div>
+          <p class="section-label">FAQ</p>
+          <h2>Pricing <span class="text-accent">Questions</span></h2>
+          <p style="max-width:500px;margin:var(--space-md) auto 0;">Everything you need to know about our pricing and payment options.</p>
+        </div>
+        <div class="faq-item sr sr--up sr-d1">
+          <button class="faq-item__question" onclick="this.parentElement.classList.toggle('open')">How long does a project take? <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg></button>
+          <div class="faq-item__answer"><p>Typically 2–6 weeks depending on the tier and scope. Starter projects wrap in about 2 weeks, Business in 3–4 weeks, and Enterprise can take 4–6 weeks for full-scale builds.</p></div>
+        </div>
+        <div class="faq-item sr sr--up sr-d2">
+          <button class="faq-item__question" onclick="this.parentElement.classList.toggle('open')">What's included in revisions? <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg></button>
+          <div class="faq-item__answer"><p>Starter includes 1 revision round, Business includes 3, and Enterprise gets unlimited. A "round" means one round of consolidated feedback.</p></div>
+        </div>
+        <div class="faq-item sr sr--up sr-d3">
+          <button class="faq-item__question" onclick="this.parentElement.classList.toggle('open')">What happens after I pay? <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg></button>
+          <div class="faq-item__answer"><p>After payment, we kick off with a Discovery call within 24 hours. You'll get a project timeline, a dedicated point of contact, and regular progress updates throughout the build.</p></div>
+        </div>
+        <div class="faq-item sr sr--up sr-d4">
+          <button class="faq-item__question" onclick="this.parentElement.classList.toggle('open')">Can I upgrade my plan later? <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg></button>
+          <div class="faq-item__answer"><p>Absolutely. You can upgrade at any time and we'll apply the difference toward your new tier. Many clients start with Starter and move to Business once they see results.</p></div>
+        </div>
+        <div class="faq-item sr sr--up sr-d5">
+          <button class="faq-item__question" onclick="this.parentElement.classList.toggle('open')">Do you offer payment plans? <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg></button>
+          <div class="faq-item__answer"><p>Yes — we offer a 50/50 split: 50% upfront to begin, 50% upon delivery. For Enterprise projects, we can arrange milestone-based payments. Just ask during your consultation.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="section" style="padding-bottom:var(--space-3xl);">
+      <div class="container">
+        <div class="cta-banner sr sr--scale">
+          <h2>Still Have <span class="text-accent">Questions?</span></h2>
+          <p style="max-width:480px;margin:var(--space-md) auto var(--space-xl);">We're always happy to jump on a call and walk you through the right plan for your project.</p>
+          <a href="/contact" class="btn btn--primary btn--lg">Book a Free Call →</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer" role="contentinfo">
+    <div class="footer__grid" style="max-width:var(--container-max);margin:0 auto;">
+      <div class="footer__brand"><div class="footer__brand-name">Web<span>ore</span></div><p class="footer__brand-text">Premium creative digital studio. We build high-end websites that convert visitors into clients.</p></div>
+      <div><div class="footer__col-title">Services</div><a href="/services" class="footer__link">Web Design</a><a href="/services" class="footer__link">Development</a><a href="/services" class="footer__link">E-commerce</a><a href="/services" class="footer__link">SEO</a><a href="/services" class="footer__link">Branding</a></div>
+      <div><div class="footer__col-title">Company</div><a href="/about" class="footer__link">About</a><a href="/portfolio" class="footer__link">Portfolio</a><a href="/pricing" class="footer__link">Pricing</a><a href="/contact" class="footer__link">Contact</a></div>
+      <div><div class="footer__col-title">Legal</div><a href="/policy" class="footer__link">Privacy Policy</a><a href="/policies" class="footer__link">Terms of Service</a></div>
+    </div>
+    <div class="footer__bottom" style="max-width:var(--container-max);margin:0 auto;"><span>&copy; 2026 Webore. All rights reserved.</span><span>Built with passion.</span></div>
+  </footer>
+
+  <div id="chatWidget" class="chat-widget" aria-label="Chat with Webore">
+    <button class="chat-widget__toggle" id="chatToggle" aria-label="Open chat" aria-expanded="false" aria-controls="chatPanel"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></button>
+    <div class="chat-panel" id="chatPanel" role="dialog" aria-label="Chat with Webore" aria-hidden="true">
+      <div class="chat-panel__header">
+        <div style="display:flex;align-items:center;gap:12px;"><div class="avatar avatar--lg" style="background:var(--accent);color:#0a0a0b;">W</div><div><div style="font-weight:600;">Webore AI</div><div style="font-size:var(--text-xs);color:var(--color-success);">● Online</div></div></div>
+        <button class="chat-panel__close" id="chatClose" aria-label="Close chat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/></svg></button>
+      </div>
+      <div class="chat-panel__messages" id="chatMessages"><div class="chat-msg chat-msg--bot"><div class="chat-msg__bubble">Hey! 👋 I'm the Webore assistant. How can I help you today?</div></div></div>
+      <form class="chat-panel__input" id="chatForm">
+        <input type="text" class="input" id="chatInput" placeholder="Type a message..." autocomplete="off" aria-label="Type a message">
+        <button type="submit" class="btn btn--primary btn--icon" aria-label="Send message"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg></button>
+      </form>
+    </div>
+  </div>
+  <div id="toast" class="toast" role="alert" aria-live="polite"></div>
+  <script type="module" src="/js/main.js"></script>
+  <script>
+    (function(){
+      var io=new IntersectionObserver(function(e){e.forEach(function(x){if(x.isIntersecting){x.target.classList.add('in');io.unobserve(x.target);}});},{threshold:0.12});
+      document.querySelectorAll('.sr').forEach(function(el){io.observe(el);});
+      window.addEventListener('scroll',function(){document.getElementById('nav').classList.toggle('scrolled',window.scrollY>40);},{passive:true});
+      var menuBtn=document.getElementById('menuBtn'),menuClose=document.getElementById('menuClose'),overlay=document.getElementById('navOverlay');
+      menuBtn&&menuBtn.addEventListener('click',function(){overlay.classList.add('active');overlay.setAttribute('aria-hidden','false');menuBtn.setAttribute('aria-expanded','true');document.body.style.overflow='hidden';});
+      function closeMenu(){overlay.classList.remove('active');overlay.setAttribute('aria-hidden','true');menuBtn.setAttribute('aria-expanded','false');document.body.style.overflow='';}
+      menuClose&&menuClose.addEventListener('click',closeMenu);
+      overlay&&overlay.querySelectorAll('.nav-overlay__link').forEach(function(l){l.addEventListener('click',closeMenu);});
+      document.addEventListener('keydown',function(e){if(e.key==='Escape'&&overlay&&overlay.classList.contains('active'))closeMenu();});
+    })();
+  </script>
+</body>
+</html>
