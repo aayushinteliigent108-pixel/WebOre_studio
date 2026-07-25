@@ -1,9 +1,10 @@
-/* hero-scroll.js — 240-frame scroll-linked canvas hero for Webore */
+/* hero-scroll.js — Optimized 240-frame scroll-linked canvas hero for Webore */
 (function () {
   'use strict';
 
   /* ===== Configuration ===== */
   var TOTAL_FRAMES = 240;
+  var BATCH_SIZE = 30;
   var FRAME_BASE = '/assets/frames/';
   var FRAME_EXT = '.png';
 
@@ -26,7 +27,7 @@
 
   if (!track || !canvas || !loader) return;
 
-  var ctx = canvas.getContext('2d');
+  var ctx = canvas.getContext('2d', { alpha: false });
 
   /* ===== prefers-reduced-motion fallback ===== */
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
@@ -43,18 +44,20 @@
   var rafId        = null;
   var pendingDraw  = false;
   var targetFrame  = 0;
+  var initialized  = false;
 
   /* ===== Helpers ===== */
   function padNum(n) { return String(n).padStart(5, '0'); }
 
   function resizeCanvas() {
-    var dpr = window.devicePixelRatio || 1;
+    var dpr = Math.min(window.devicePixelRatio || 1, 2);
     var w = window.innerWidth;
     var h = window.innerHeight;
     canvas.width  = Math.round(w * dpr);
     canvas.height = Math.round(h * dpr);
     canvas.style.width  = w + 'px';
     canvas.style.height = h + 'px';
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.scale(dpr, dpr);
   }
 
@@ -69,31 +72,56 @@
     var dh = ih * scale;
     var dx = (cw - dw) / 2;
     var dy = (ch - dh) / 2;
-    /* Always dark background so letterbox areas match the site theme */
     ctx.fillStyle = '#0a0a0b';
     ctx.fillRect(0, 0, cw, ch);
     ctx.drawImage(img, dx, dy, dw, dh);
   }
 
-  /* ===== Preload all frames ===== */
+  /* ===== Batch preloader — loads frames in waves to avoid memory/thrashing ===== */
   function preloadFrames(onComplete) {
     var startTime = Date.now();
-    for (var i = 0; i < TOTAL_FRAMES; i++) {
-      (function (idx) {
-        var img = new Image();
-        img.onload = img.onerror = function () {
-          loadedCount++;
-          var pct = Math.round((loadedCount / TOTAL_FRAMES) * 100);
-          if (loaderBar) loaderBar.style.width = pct + '%';
-          if (loadedCount === TOTAL_FRAMES) {
-            var delay = Math.max(0, 200 - (Date.now() - startTime));
-            setTimeout(onComplete, delay);
-          }
-        };
-        img.src = FRAME_BASE + padNum(idx + 1) + FRAME_EXT;
-        frames[idx] = img;
-      })(i);
+    var batch = 0;
+
+    function loadBatch() {
+      var start = batch * BATCH_SIZE;
+      var end = Math.min(start + BATCH_SIZE, TOTAL_FRAMES);
+      var batchLoaded = 0;
+      var batchTotal = end - start;
+
+      if (batchTotal <= 0) {
+        var delay = Math.max(0, 150 - (Date.now() - startTime));
+        setTimeout(onComplete, delay);
+        return;
+      }
+
+      for (var i = start; i < end; i++) {
+        (function (idx) {
+          var img = new Image();
+          img.onload = img.onerror = function () {
+            loadedCount++;
+            batchLoaded++;
+            var pct = Math.round((loadedCount / TOTAL_FRAMES) * 100);
+            if (loaderBar) loaderBar.style.width = pct + '%';
+
+            /* Draw first frame as soon as it loads */
+            if (idx === 0 && currentFrame < 0) {
+              currentFrame = 0;
+              drawFrame(img);
+            }
+
+            if (batchLoaded === batchTotal) {
+              batch++;
+              /* Small yield between batches to let paint happen */
+              setTimeout(loadBatch, 0);
+            }
+          };
+          img.src = FRAME_BASE + padNum(idx + 1) + FRAME_EXT;
+          frames[idx] = img;
+        })(i);
+      }
     }
+
+    loadBatch();
   }
 
   /* ===== Scroll → frame index ===== */
@@ -135,7 +163,6 @@
 
   /* ===== Animate caption words in ===== */
   function animateCaption(captionEl) {
-    /* Eyebrow fade-slide */
     var eyebrow = captionEl.querySelector('.hs-caption__eyebrow');
     if (eyebrow) {
       eyebrow.style.cssText = 'opacity:0;transform:translateY(10px);';
@@ -146,7 +173,6 @@
       });
     }
 
-    /* Headline: word-by-word clip reveal */
     var words = captionEl.querySelectorAll('.hs-word-outer');
     words.forEach(function (outer, i) {
       var inner = outer.querySelector('.hs-word-inner');
@@ -159,7 +185,6 @@
       }, delay);
     });
 
-    /* Sub-text fade up */
     var sub = captionEl.querySelector('.hs-caption__sub');
     if (sub) {
       sub.style.cssText = 'opacity:0;transform:translateY(12px);';
@@ -170,7 +195,6 @@
       }, 480);
     }
 
-    /* CTA bounce-in */
     var cta = captionEl.querySelector('.hs-caption__cta, .hs-caption__explore');
     if (cta) {
       cta.style.cssText = 'opacity:0;transform:scale(0.88) translateY(8px);';
@@ -182,7 +206,7 @@
     }
   }
 
-  /* ===== RAF draw loop ===== */
+  /* ===== RAF draw loop with frame skipping ===== */
   function scheduleFrame(frameIdx) {
     targetFrame = Math.max(0, Math.min(TOTAL_FRAMES - 1, frameIdx));
     if (!pendingDraw) {
@@ -195,19 +219,28 @@
     pendingDraw = false;
     if (targetFrame !== currentFrame) {
       currentFrame = targetFrame;
-      drawFrame(frames[currentFrame]);
+      var img = frames[currentFrame];
+      if (img && img.complete && img.naturalWidth) {
+        drawFrame(img);
+      }
     }
   }
 
-  /* ===== Throttled scroll listener ===== */
+  /* ===== Optimized scroll listener — single RAF throttle, skip duplicate frames ===== */
   var scrollScheduled = false;
+  var lastProgress = -1;
   function onScroll() {
     if (scrollScheduled) return;
     scrollScheduled = true;
     requestAnimationFrame(function () {
       scrollScheduled = false;
       var progress = getScrollProgress();
-      scheduleFrame(Math.round(progress * (TOTAL_FRAMES - 1)));
+      var frameIdx = Math.round(progress * (TOTAL_FRAMES - 1));
+      /* Skip if same frame — avoids unnecessary canvas redraws */
+      if (frameIdx !== lastProgress) {
+        lastProgress = frameIdx;
+        scheduleFrame(frameIdx);
+      }
       updateCaptions(progress);
     });
   }
@@ -219,7 +252,7 @@
     resizeTimer = setTimeout(function () {
       resizeCanvas();
       if (currentFrame >= 0 && frames[currentFrame]) drawFrame(frames[currentFrame]);
-    }, 150);
+    }, 200);
   }
 
   /* ===== Dot click → scroll to beat ===== */
@@ -261,7 +294,6 @@
         (beat.explore ? '<a class="hs-caption__explore" href="#">' + beat.explore + '</a>' : '') +
         (beat.cta     ? '<a class="hs-caption__cta" href="' + beat.cta.href + '">' + beat.cta.text + '</a>' : '');
 
-      /* Explore scroll behaviour */
       var exploreLink = div.querySelector('.hs-caption__explore');
       if (exploreLink) {
         exploreLink.addEventListener('click', function (e) {
@@ -287,14 +319,17 @@
 
   /* ===== Init ===== */
   function init() {
+    if (initialized) return;
+    initialized = true;
+
     resizeCanvas();
     buildCaptions();
     buildDots();
     initDotNavigation();
 
     preloadFrames(function () {
-      currentFrame = 0;
-      drawFrame(frames[0]);
+      if (currentFrame < 0) currentFrame = 0;
+      drawFrame(frames[currentFrame]);
       updateCaptions(0);
       if (loader) loader.classList.add('hidden');
       window.addEventListener('scroll', onScroll, { passive: true });

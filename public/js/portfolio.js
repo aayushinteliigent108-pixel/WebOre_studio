@@ -228,38 +228,38 @@ function loadPricing() {
 function getDefaultPricing() {
   return `
     <div class="pricing-card card-slide card-slide--from-left sr-d1">
-      <div class="pricing-card__name">Starter</div>
-      <div class="pricing-card__price">₹999</div>
-      <div class="pricing-card__period">per project</div>
+      <div class="pricing-card__name">Web Design</div>
+      <div class="pricing-card__price">Custom</div>
+      <div class="pricing-card__period">tailored to your project</div>
       <div class="pricing-card__features">
-        <div class="pricing-card__feature"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg> 5-page responsive website</div>
-        <div class="pricing-card__feature"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg> Basic SEO setup</div>
-        <div class="pricing-card__feature"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg> Mobile-first design</div>
+        <div class="pricing-card__feature"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg> Custom UI/UX design</div>
+        <div class="pricing-card__feature"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg> Responsive across all devices</div>
+        <div class="pricing-card__feature"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg> Brand-aligned visuals</div>
       </div>
-      <a href="/contact" class="btn btn--secondary" style="width:100%;justify-content:center;">Get Started</a>
+      <a href="/contact" class="btn btn--secondary" style="width:100%;justify-content:center;">Get a Quote</a>
     </div>
     <div class="pricing-card pricing-card--highlighted card-slide card-slide--from-bottom sr-d2">
       <div class="pricing-card__popular">Most Popular</div>
-      <div class="pricing-card__name">Business</div>
-      <div class="pricing-card__price">₹2,499</div>
-      <div class="pricing-card__period">per project</div>
+      <div class="pricing-card__name">Full Stack</div>
+      <div class="pricing-card__price">Custom</div>
+      <div class="pricing-card__period">tailored to your project</div>
       <div class="pricing-card__features">
-        <div class="pricing-card__feature"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg> 10-page responsive website</div>
-        <div class="pricing-card__feature"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg> Advanced SEO & analytics</div>
-        <div class="pricing-card__feature"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg> CMS integration</div>
+        <div class="pricing-card__feature"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg> Design + Development bundle</div>
+        <div class="pricing-card__feature"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg> CMS &amp; admin dashboard</div>
+        <div class="pricing-card__feature"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg> SEO &amp; performance optimized</div>
       </div>
-      <a href="/contact" class="btn btn--primary" style="width:100%;justify-content:center;">Get Started</a>
+      <a href="/contact" class="btn btn--primary" style="width:100%;justify-content:center;">Get a Quote</a>
     </div>
     <div class="pricing-card card-slide card-slide--from-right sr-d3">
-      <div class="pricing-card__name">Enterprise</div>
-      <div class="pricing-card__price">₹4,999</div>
-      <div class="pricing-card__period">per project</div>
+      <div class="pricing-card__name">E-commerce</div>
+      <div class="pricing-card__price">Custom</div>
+      <div class="pricing-card__period">tailored to your project</div>
       <div class="pricing-card__features">
-        <div class="pricing-card__feature"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg> Unlimited pages</div>
-        <div class="pricing-card__feature"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg> Custom features</div>
-        <div class="pricing-card__feature"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg> 90-day maintenance</div>
+        <div class="pricing-card__feature"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg> Full online store setup</div>
+        <div class="pricing-card__feature"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg> Secure payment integration</div>
+        <div class="pricing-card__feature"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg> 90-day maintenance included</div>
       </div>
-      <a href="/contact" class="btn btn--secondary" style="width:100%;justify-content:center;">Get Started</a>
+      <a href="/contact" class="btn btn--secondary" style="width:100%;justify-content:center;">Get a Quote</a>
     </div>`;
 }
 

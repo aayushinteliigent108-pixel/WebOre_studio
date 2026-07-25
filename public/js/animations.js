@@ -35,28 +35,28 @@ export function initAnimations() {
     revealNew.forEach(el => revealNewObserver.observe(el));
   }
 
-  // Parallax background on sections
+  // Parallax background on sections — single RAF-throttled listener
   const parallaxBgs = document.querySelectorAll('.parallax-bg');
   if (parallaxBgs.length) {
-    const parallaxObserver = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          window.addEventListener('scroll', updateParallax, { passive: true });
-        } else {
-          window.removeEventListener('scroll', updateParallax);
-        }
-      });
-    }, { threshold: 0 });
-    parallaxBgs.forEach(el => parallaxObserver.observe(el));
-
+    let parallaxRaf = false;
     function updateParallax() {
-      parallaxBgs.forEach(bg => {
+      for (let i = 0; i < parallaxBgs.length; i++) {
+        const bg = parallaxBgs[i];
         const section = bg.parentElement;
         const rect = section.getBoundingClientRect();
+        if (rect.bottom < -200 || rect.top > window.innerHeight + 200) continue;
         const scrolled = rect.top / window.innerHeight;
         bg.style.transform = `translateY(${scrolled * 60}px)`;
-      });
+      }
     }
+    window.addEventListener('scroll', function () {
+      if (parallaxRaf) return;
+      parallaxRaf = true;
+      requestAnimationFrame(function () {
+        parallaxRaf = false;
+        updateParallax();
+      });
+    }, { passive: true });
   }
 
   // Counter animation for stats
