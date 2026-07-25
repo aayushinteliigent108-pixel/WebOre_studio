@@ -3,9 +3,9 @@
   'use strict';
 
   /* ===== Configuration ===== */
-  var TOTAL_FRAMES = 80;
-  var FRAME_BASE = '/assets/frames-opt/';
-  var FRAME_EXT = '.webp'; // Falls back to .png if WebP frames don't exist
+  var TOTAL_FRAMES = 240;
+  var FRAME_BASE = '/assets/frames/';
+  var FRAME_EXT = '.png';
   var LRU_SIZE = 15;       // Keep only 15 most recent frames in memory
   var CRITICAL_COUNT = 10; // Load first 10 frames before showing hero
 
@@ -113,6 +113,7 @@
     img.onerror = function () {
       loadedCount++;
       loadedFlags[idx] = false; // Allow retry
+      if (callback) callback(null); // Still notify so critical phase isn't blocked
     };
     img.src = FRAME_BASE + padNum(idx + 1) + FRAME_EXT;
   }
@@ -122,6 +123,17 @@
     var startTime = Date.now();
     var loaded = 0;
     var needed = Math.min(CRITICAL_COUNT, TOTAL_FRAMES);
+    var done = false;
+
+    function finish() {
+      if (done) return;
+      done = true;
+      var delay = Math.max(0, 300 - (Date.now() - startTime));
+      setTimeout(onComplete, delay);
+    }
+
+    // Safety timeout: show hero after 4s even if not all frames loaded
+    setTimeout(finish, 4000);
 
     for (var i = 0; i < needed; i++) {
       (function (idx) {
@@ -129,10 +141,7 @@
           loaded++;
           var pct = Math.round((loaded / needed) * 100);
           if (loaderBar) loaderBar.style.width = pct + '%';
-          if (loaded === needed) {
-            var delay = Math.max(0, 300 - (Date.now() - startTime));
-            setTimeout(onComplete, delay);
-          }
+          if (loaded === needed) finish();
         });
       })(i);
     }
