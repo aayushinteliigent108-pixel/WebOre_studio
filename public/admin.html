@@ -758,14 +758,16 @@
     };
 
     window.sendProjectMessage = async function() {
-      if (!currentProjectId) return;
+      if (!currentProjectId) return showToast('No project selected.', 'error');
       const content = document.getElementById('projectMsgInput').value.trim();
       if (!content) return;
       try {
-        await adminFetch(API + '/client-messages', { method: 'POST', headers: authHeaders(), body: JSON.stringify({ projectId: currentProjectId, content, sender: 'admin', senderName: 'Admin' }) });
+        const result = await adminFetch(API + '/client-messages', { method: 'POST', headers: authHeaders(), body: JSON.stringify({ projectId: currentProjectId, content }) });
+        if (!result || result.error) { showToast(result?.error || 'Failed to send.', 'error'); return; }
         document.getElementById('projectMsgInput').value = '';
+        showToast('Message sent!');
         openProject(currentProjectId);
-      } catch (err) { console.error(err); showToast('Failed to send message.', 'error'); }
+      } catch (err) { console.error('sendProjectMessage error:', err); showToast('Failed to send message.', 'error'); }
     };
 
     window.closeNewProject = function() { showProjectsList(); };
@@ -803,28 +805,42 @@
 
     // ==================== CLIENT MESSAGES ====================
     let replyProjectId = null;
+    let replyMsgData = null;
+
+    function renderChatBubble(msg) {
+      var isAdmin = msg.sender === 'admin';
+      var bg = isAdmin ? 'background:var(--accent);color:#111;align-self:flex-end;border-bottom-right-radius:4px;' : 'background:var(--bg-soft);border:1px solid var(--border);align-self:flex-start;border-bottom-left-radius:4px;';
+      return '<div style="padding:8px 12px;border-radius:12px;max-width:85%;' + bg + '">'
+        + '<div style="font-size:var(--text-xs);font-weight:600;margin-bottom:2px;opacity:.7;">' + esc(msg.senderName) + '</div>'
+        + '<div style="font-size:var(--text-sm);">' + esc(msg.content) + '</div>'
+        + '<div style="font-size:0.6rem;opacity:.5;margin-top:4px;">' + new Date(msg.createdAt).toLocaleString() + '</div>'
+        + '</div>';
+    }
 
     async function loadClientMessages() {
       document.getElementById('replyPanel').style.display = 'none';
-      document.getElementById('clientMessagesTable').parentElement.style.display = '';
+      var tbl = document.getElementById('clientMessagesTable');
+      tbl.parentElement.style.display = '';
 
       try {
-        const data = await adminFetch(API + '/client-messages');
-        if (!data) return;
-        const badge = document.getElementById('unreadBadge');
+        var data = await adminFetch(API + '/client-messages');
+        if (!data) { tbl.innerHTML = '<p style="color:var(--text-dim);text-align:center;padding:var(--space-2xl);">Failed to load — are you logged in?</p>'; return; }
+        if (data.error) { tbl.innerHTML = '<p style="color:var(--color-error);text-align:center;padding:var(--space-2xl);">Error: ' + esc(data.error) + '</p>'; return; }
+
+        var badge = document.getElementById('unreadBadge');
         if (data.unread > 0) { badge.style.display = ''; badge.textContent = data.unread + ' unread'; }
         else { badge.style.display = 'none'; }
 
-        // Store messages for retrieval by event delegation
-        data.messages.forEach(m => { _msgStore[m.id] = m; });
+        // Store messages fresh each load
+        if (data.messages) data.messages.forEach(function(m) { _msgStore[m.id] = m; });
 
-        if (!data.messages.length) {
-          document.getElementById('clientMessagesTable').innerHTML = '<p style="color:var(--text-dim);text-align:center;padding:var(--space-2xl);">No client messages yet.</p>';
+        if (!data.messages || !data.messages.length) {
+          tbl.innerHTML = '<p style="color:var(--text-dim);text-align:center;padding:var(--space-2xl);">No client messages yet. Messages from the "Start a Project" form and client dashboard will appear here.</p>';
           return;
         }
 
-        let html = '<table class="admin-table"><thead><tr><th>From</th><th>Project</th><th>Message</th><th>Time</th><th>Status</th><th>Actions</th></tr></thead><tbody>';
-        data.messages.forEach(m => {
+        var html = '<table class="admin-table"><thead><tr><th>From</th><th>Project</th><th>Message</th><th>Time</th><th>Status</th><th>Actions</th></tr></thead><tbody>';
+        data.messages.forEach(function(m) {
           html += '<tr data-mid="' + m.id + '">'
             + '<td><div style="font-weight:600;font-size:var(--text-sm);">' + esc(m.senderName) + '</div><div style="font-size:var(--text-xs);color:var(--text-dim);">' + esc(m.senderEmail || '') + '</div></td>'
             + '<td style="font-size:var(--text-sm);">' + (m.project ? esc(m.project.title) : '<span style="color:var(--text-dim);">—</span>') + '</td>'
@@ -835,25 +851,26 @@
             + '</tr>';
         });
         html += '</tbody></table>';
-        document.getElementById('clientMessagesTable').innerHTML = html;
+        tbl.innerHTML = html;
       } catch (err) {
         console.error('loadClientMessages error:', err);
-        showToast('Failed to load messages.', 'error');
+        tbl.innerHTML = '<p style="color:var(--color-error);text-align:center;padding:var(--space-2xl);">Error loading messages. Check console.</p>';
       }
     }
 
     // Event delegation for reply buttons
     document.getElementById('clientMessagesTable').addEventListener('click', function(e) {
-      const btn = e.target.closest('.js-reply-msg');
+      var btn = e.target.closest('.js-reply-msg');
       if (btn) { openReply(btn.dataset.id); }
     });
 
     window.openReply = async function(msgId) {
       try {
-        const m = _msgStore[msgId];
-        if (!m) { showToast('Message not found.', 'error'); return; }
+        var m = _msgStore[msgId];
+        if (!m) { showToast('Message not found in cache. Reload the page and try again.', 'error'); return; }
 
         replyProjectId = m.projectId || null;
+        replyMsgData = m;
 
         document.getElementById('clientMessagesTable').parentElement.style.display = 'none';
         document.getElementById('replyPanel').style.display = 'block';
@@ -872,28 +889,19 @@
           + '</div>';
 
         // Load conversation thread
-        const thread = document.getElementById('replyThread');
+        var thread = document.getElementById('replyThread');
         if (m.projectId) {
-          const projData = await adminFetch(API + '/projects/' + m.projectId);
-          if (projData && projData.project) {
-            const msgs = projData.project.messages || [];
-            thread.innerHTML = msgs.length
-              ? msgs.map(msg => {
-                  const isAdmin = msg.sender === 'admin';
-                  const bg = isAdmin ? 'background:var(--accent);color:#111;align-self:flex-end;border-bottom-right-radius:4px;' : 'background:var(--bg-soft);border:1px solid var(--border);align-self:flex-start;border-bottom-left-radius:4px;';
-                  return '<div style="padding:8px 12px;border-radius:12px;max-width:85%;' + bg + '">'
-                    + '<div style="font-size:var(--text-xs);font-weight:600;margin-bottom:2px;opacity:.7;">' + esc(msg.senderName) + '</div>'
-                    + '<div style="font-size:var(--text-sm);">' + esc(msg.content) + '</div>'
-                    + '<div style="font-size:0.6rem;opacity:.5;margin-top:4px;">' + new Date(msg.createdAt).toLocaleString() + '</div>'
-                    + '</div>';
-                }).join('')
+          var projData = await adminFetch(API + '/projects/' + m.projectId);
+          if (projData && projData.project && projData.project.messages) {
+            thread.innerHTML = projData.project.messages.length
+              ? projData.project.messages.map(renderChatBubble).join('')
               : '<p style="color:var(--text-dim);font-size:var(--text-sm);text-align:center;">No messages in this thread yet.</p>';
             thread.scrollTop = thread.scrollHeight;
           } else {
             thread.innerHTML = '<p style="color:var(--text-dim);font-size:var(--text-sm);">Could not load conversation.</p>';
           }
         } else {
-          thread.innerHTML = '<p style="color:var(--text-dim);font-size:var(--text-sm);text-align:center;">This message is not linked to a project.</p>';
+          thread.innerHTML = '<p style="color:var(--text-dim);font-size:var(--text-sm);text-align:center;">This message is not linked to a project. Go to Client Projects to reply.</p>';
         }
       } catch (err) {
         console.error('openReply error:', err);
@@ -908,34 +916,26 @@
     };
 
     window.sendReply = async function() {
-      const content = document.getElementById('replyContent').value.trim();
+      var content = document.getElementById('replyContent').value.trim();
       if (!content) return showToast('Type a reply first.', 'error');
-      if (!replyProjectId) return showToast('This message is not linked to a project. Reply from the project detail instead.', 'error');
+      if (!replyProjectId) return showToast('This message is not linked to a project. Reply from Client Projects instead.', 'error');
       try {
-        await adminFetch(API + '/client-messages', {
+        var result = await adminFetch(API + '/client-messages', {
           method: 'POST',
           headers: authHeaders(),
-          body: JSON.stringify({ projectId: replyProjectId, content, sender: 'admin', senderName: 'Admin' }),
+          body: JSON.stringify({ projectId: replyProjectId, content }),
         });
+        if (!result || result.error) { showToast(result?.error || 'Failed to send reply.', 'error'); return; }
         document.getElementById('replyContent').value = '';
         showToast('Reply sent!');
-        // Reload the thread
-        const projData = await adminFetch(API + '/projects/' + replyProjectId);
-        if (projData && projData.project) {
-          const thread = document.getElementById('replyThread');
-          const msgs = projData.project.messages || [];
-          thread.innerHTML = msgs.map(msg => {
-            const isAdmin = msg.sender === 'admin';
-            const bg = isAdmin ? 'background:var(--accent);color:#111;align-self:flex-end;border-bottom-right-radius:4px;' : 'background:var(--bg-soft);border:1px solid var(--border);align-self:flex-start;border-bottom-left-radius:4px;';
-            return '<div style="padding:8px 12px;border-radius:12px;max-width:85%;' + bg + '">'
-              + '<div style="font-size:var(--text-xs);font-weight:600;margin-bottom:2px;opacity:.7;">' + esc(msg.senderName) + '</div>'
-              + '<div style="font-size:var(--text-sm);">' + esc(msg.content) + '</div>'
-              + '<div style="font-size:0.6rem;opacity:.5;margin-top:4px;">' + new Date(msg.createdAt).toLocaleString() + '</div>'
-              + '</div>';
-          }).join('');
+        // Reload the thread with fresh data
+        var projData = await adminFetch(API + '/projects/' + replyProjectId);
+        if (projData && projData.project && projData.project.messages) {
+          var thread = document.getElementById('replyThread');
+          thread.innerHTML = projData.project.messages.map(renderChatBubble).join('');
           thread.scrollTop = thread.scrollHeight;
         }
-      } catch (err) { console.error(err); showToast('Failed to send reply.', 'error'); }
+      } catch (err) { console.error('sendReply error:', err); showToast('Failed to send reply.', 'error'); }
     };
 
     async function loadDashboard() {
