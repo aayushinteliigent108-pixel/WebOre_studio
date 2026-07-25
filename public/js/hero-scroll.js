@@ -6,7 +6,7 @@
   var TOTAL_FRAMES = 240;
   var FRAME_BASE = '/assets/frames/';
   var FRAME_EXT = '.png';
-  var LRU_SIZE = 15;       // Keep only 15 most recent frames in memory
+  var LRU_SIZE = 25;       // Keep 25 most recent frames in memory
   var CRITICAL_COUNT = 10; // Load first 10 frames before showing hero
 
   var BEATS = [
@@ -89,7 +89,8 @@
     // Evict if over limit
     while (usageOrder.length > LRU_SIZE) {
       var evict = usageOrder.shift();
-      frames[evict] = null; //释放 Image object (allow GC)
+      frames[evict] = null; // Release Image object (allow GC)
+      loadedFlags[evict] = false; // Allow re-loading when needed again
     }
   }
 
@@ -132,8 +133,8 @@
       setTimeout(onComplete, delay);
     }
 
-    // Safety timeout: show hero after 4s even if not all frames loaded
-    setTimeout(finish, 4000);
+    // Safety timeout: show hero after 6s even if not all frames loaded
+    setTimeout(finish, 6000);
 
     for (var i = 0; i < needed; i++) {
       (function (idx) {
