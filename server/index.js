@@ -7,7 +7,7 @@ import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
 import session from 'express-session';
 import rateLimit from 'express-rate-limit';
-import passport from 'passport';
+import passport from './passport.js';
 import 'dotenv/config';
 
 import authRoutes from './routes/auth.js';
@@ -92,6 +92,7 @@ app.use('/admin/api', adminRoutes);
 app.get('/pricing', (req, res) => res.sendFile(join(__dirname, '..', 'public', 'pricing.html')));
 app.get('/portfolio', (req, res) => res.sendFile(join(__dirname, '..', 'public', 'portfolio.html')));
 app.get('/contact', (req, res) => res.sendFile(join(__dirname, '..', 'public', 'contact.html')));
+app.get('/start-project', (req, res) => res.sendFile(join(__dirname, '..', 'public', 'start-project.html')));
 app.get('/services', (req, res) => res.sendFile(join(__dirname, '..', 'public', 'services.html')));
 app.get('/about', (req, res) => res.sendFile(join(__dirname, '..', 'public', 'about.html')));
 app.get('/dashboard', (req, res) => res.sendFile(join(__dirname, '..', 'public', 'dashboard.html')));

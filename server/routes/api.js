@@ -2,34 +2,56 @@
 import { Router } from 'express';
 import { getPrisma } from '../db.js';
 import fetch from 'node-fetch';
+import { notifyAdminNewLead, notifyAdminNewProject, notifyClientProjectReceived } from '../mailer.js';
+
 
 const router = Router();
 
 // Portfolio
 router.get('/portfolio', async (req, res) => {
-  const prisma = getPrisma();
-  const projects = await prisma.portfolioProject.findMany({ orderBy: { order: 'asc' } });
-  res.json({ projects });
+  try {
+    const prisma = getPrisma();
+    const projects = await prisma.portfolioProject.findMany({ orderBy: { order: 'asc' } });
+    res.json({ projects });
+  } catch (err) {
+    console.error('Portfolio error:', err);
+    res.json({ projects: [] });
+  }
 });
 
 router.get('/portfolio/featured', async (req, res) => {
-  const prisma = getPrisma();
-  const projects = await prisma.portfolioProject.findMany({ where: { featured: true }, orderBy: { order: 'asc' } });
-  res.json({ projects });
+  try {
+    const prisma = getPrisma();
+    const projects = await prisma.portfolioProject.findMany({ where: { featured: true }, orderBy: { order: 'asc' } });
+    res.json({ projects });
+  } catch (err) {
+    console.error('Portfolio featured error:', err);
+    res.json({ projects: [] });
+  }
 });
 
 // Pricing
 router.get('/pricing', async (req, res) => {
-  const prisma = getPrisma();
-  const plans = await prisma.pricingPlan.findMany({ orderBy: { order: 'asc' } });
-  res.json({ plans: plans.map(p => ({ ...p, features: JSON.parse(p.features) })) });
+  try {
+    const prisma = getPrisma();
+    const plans = await prisma.pricingPlan.findMany({ orderBy: { order: 'asc' } });
+    res.json({ plans: plans.map(p => ({ ...p, features: JSON.parse(p.features) })) });
+  } catch (err) {
+    console.error('Pricing error:', err);
+    res.json({ plans: [] });
+  }
 });
 
 // Testimonials
 router.get('/testimonials', async (req, res) => {
-  const prisma = getPrisma();
-  const testimonials = await prisma.testimonial.findMany();
-  res.json({ testimonials });
+  try {
+    const prisma = getPrisma();
+    const testimonials = await prisma.testimonial.findMany();
+    res.json({ testimonials });
+  } catch (err) {
+    console.error('Testimonials error:', err);
+    res.json({ testimonials: [] });
+  }
 });
 
 // Contact form
@@ -43,10 +65,76 @@ router.post('/contact', async (req, res) => {
     await prisma.message.create({
       data: { name, email, phone: phone || null, projectType, budget: budget || null, message },
     });
+    // Fire-and-forget email to admin's Gmail — never blocks/breaks the response
+    notifyAdminNewLead({ name, email, phone, projectType, budget, message });
     res.json({ success: true, message: 'Thank you! We\'ll get back to you within 24 hours.' });
   } catch (err) {
     console.error('Contact error:', err);
     res.status(500).json({ error: 'Failed to submit message.' });
+  }
+});
+
+// ==================== START A PROJECT (multi-step wizard) ====================
+// Deliberately separate from /api/contact. Contact Us -> Message model
+// (shows in admin "Contact Leads"). Start a Project -> ClientProject + first
+// ClientMessage (shows in admin "Client Projects" / "Client Messages"), so the
+// two flows never mix up in the admin panel.
+router.post('/start-project', async (req, res) => {
+  try {
+    const {
+      clientName, clientEmail, phone,
+      projectType, budget, timeline,
+      goals, features, hasExistingSite, existingSiteUrl,
+      inspiration, notes,
+    } = req.body;
+
+    if (!clientName || !clientEmail || !projectType) {
+      return res.status(400).json({ error: 'Name, email, and project type are required.' });
+    }
+
+    const prisma = getPrisma();
+    const title = `${projectType} — ${clientName}`;
+
+    const descriptionParts = [
+      goals && `Goals: ${goals}`,
+      features && `Key features: ${Array.isArray(features) ? features.join(', ') : features}`,
+      hasExistingSite && `Existing site: ${existingSiteUrl || 'yes, but no URL given'}`,
+      inspiration && `Inspiration / references: ${inspiration}`,
+      timeline && `Desired timeline: ${timeline}`,
+      notes && `Additional notes: ${notes}`,
+    ].filter(Boolean).join('\n');
+
+    const project = await prisma.clientProject.create({
+      data: {
+        title,
+        clientName,
+        clientEmail,
+        status: 'received',
+        priority: 'medium',
+        description: descriptionParts || null,
+        budget: budget || null,
+      },
+    });
+
+    // Store the original submission as the first message thread on the project
+    await prisma.clientMessage.create({
+      data: {
+        projectId: project.id,
+        sender: 'client',
+        senderName: clientName,
+        senderEmail: clientEmail,
+        content: descriptionParts || 'New project request submitted via the Start a Project wizard.',
+        read: false,
+      },
+    });
+
+    notifyAdminNewProject({ title, clientName, clientEmail, description: descriptionParts, projectType, budget, timeline });
+    notifyClientProjectReceived({ clientEmail, clientName, title });
+
+    res.json({ success: true, projectId: project.id, message: 'Thanks! Your project request is in — we\'ll be in touch within 24 hours.' });
+  } catch (err) {
+    console.error('Start project error:', err);
+    res.status(500).json({ error: 'Failed to submit project request.' });
   }
 });
 
@@ -159,14 +247,84 @@ router.get('/client/profile', requireAuth, async (req, res) => {
 
 // Get all status updates (team notes on messages)
 router.get('/client/updates', requireAuth, async (req, res) => {
-  const prisma = getPrisma();
-  // Get messages with their notes (using the status field as a simple update system)
-  const messages = await prisma.message.findMany({
-    where: { email: req.user.email },
-    select: { id: true, name: true, projectType: true, status: true, createdAt: true },
-    orderBy: { createdAt: 'desc' },
-  });
-  res.json({ updates: messages });
+  try {
+    const prisma = getPrisma();
+    const messages = await prisma.message.findMany({
+      where: { email: req.user.email },
+      select: { id: true, name: true, projectType: true, status: true, createdAt: true },
+      orderBy: { createdAt: 'desc' },
+    });
+    res.json({ updates: messages });
+  } catch (err) {
+    console.error('Client updates error:', err);
+    res.json({ updates: [] });
+  }
+});
+
+// ==================== CLIENT PROJECTS ====================
+// Get all projects for the logged-in client
+router.get('/client/projects', requireAuth, async (req, res) => {
+  try {
+    const prisma = getPrisma();
+    const projects = await prisma.clientProject.findMany({
+      where: { clientEmail: req.user.email },
+      orderBy: { updatedAt: 'desc' },
+      include: {
+        updates: { orderBy: { createdAt: 'desc' } },
+        messages: { orderBy: { createdAt: 'asc' } },
+      },
+    });
+    res.json({ projects });
+  } catch (err) {
+    console.error('Client projects error:', err);
+    res.json({ projects: [] });
+  }
+});
+
+// Get a single project for the client (must own it)
+router.get('/client/projects/:id', requireAuth, async (req, res) => {
+  try {
+    const prisma = getPrisma();
+    const project = await prisma.clientProject.findUnique({
+      where: { id: req.params.id },
+      include: {
+        updates: { orderBy: { createdAt: 'desc' } },
+        messages: { orderBy: { createdAt: 'asc' } },
+      },
+    });
+    if (!project) return res.status(404).json({ error: 'Project not found.' });
+    if (project.clientEmail !== req.user.email) return res.status(403).json({ error: 'Access denied.' });
+    res.json({ project });
+  } catch (err) {
+    console.error('Client project error:', err);
+    res.status(500).json({ error: 'Failed to load project.' });
+  }
+});
+
+// Client sends a message on their project
+router.post('/client/projects/:id/messages', requireAuth, async (req, res) => {
+  try {
+    const prisma = getPrisma();
+    const project = await prisma.clientProject.findUnique({ where: { id: req.params.id } });
+    if (!project) return res.status(404).json({ error: 'Project not found.' });
+    if (project.clientEmail !== req.user.email) return res.status(403).json({ error: 'Access denied.' });
+    const { content } = req.body;
+    if (!content || !content.trim()) return res.status(400).json({ error: 'Message content is required.' });
+    const message = await prisma.clientMessage.create({
+      data: {
+        projectId: project.id,
+        sender: 'client',
+        senderName: `${req.user.firstName} ${req.user.lastName || ''}`.trim(),
+        senderEmail: req.user.email,
+        content: content.trim(),
+        read: false,
+      },
+    });
+    res.json({ message });
+  } catch (err) {
+    console.error('Client message error:', err);
+    res.status(500).json({ error: 'Failed to send message.' });
+  }
 });
 
 export default router;

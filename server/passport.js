@@ -40,9 +40,10 @@ async function findOrCreateUser(profile, provider) {
     }
   }
 
-  // Create new user
+  // Create new user (GitHub users may have private emails)
+  const userEmail = email || `${providerId}@${provider}.placeholder`;
   return prisma.user.create({
-    data: { email, firstName, lastName, avatar, provider, providerId },
+    data: { email: userEmail, firstName, lastName, avatar, provider, providerId },
   });
 }
 

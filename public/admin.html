@@ -38,8 +38,14 @@
     .status-badge--new { background: rgba(245,130,13,0.1); color: var(--accent); }
     .status-badge--read { background: rgba(16,185,129,0.1); color: var(--color-success); }
     .status-badge--replied { background: rgba(99,102,241,0.1); color: #818cf8; }
+    .status-badge--received { background: rgba(245,130,13,0.1); color: var(--accent); }
+    .status-badge--thinking { background: rgba(139,92,246,0.1); color: #8b5cf6; }
+    .status-badge--building { background: rgba(59,130,246,0.1); color: #3b82f6; }
+    .status-badge--ready { background: rgba(16,185,129,0.1); color: var(--color-success); }
+    .status-badge--payment_left { background: rgba(245,158,11,0.1); color: #f59e0b; }
     .admin-section { display: none; }
     .admin-section.active { display: block; }
+    #replyPanel .admin-panel { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-xl); padding: var(--space-xl); margin-bottom: var(--space-lg); }
     .admin-panel { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-xl); padding: var(--space-xl); margin-bottom: var(--space-lg); }
     .admin-panel__title { font-size: var(--text-lg); font-weight: 700; margin-bottom: var(--space-lg); }
     .config-editor { background: var(--bg-soft); border: 1px solid var(--border); border-radius: var(--radius-md); padding: var(--space-lg); margin-bottom: var(--space-md); }
@@ -235,7 +241,7 @@
             </div>
             <div class="input-group"><label>Description</label><textarea class="input" id="npDescription" rows="3"></textarea></div>
             <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:var(--space-md);">
-              <div class="input-group"><label>Status</label><select class="input" id="npStatus"><option value="pending">Pending</option><option value="in_progress">In Progress</option><option value="review">Review</option><option value="completed">Completed</option><option value="on_hold">On Hold</option></select></div>
+              <div class="input-group"><label>Status</label><select class="input" id="npStatus"><option value="received">Received</option><option value="thinking">Thinking</option><option value="building">Building</option><option value="ready">Ready</option><option value="payment_left">Payment Left</option></select></div>
               <div class="input-group"><label>Priority</label><select class="input" id="npPriority"><option value="low">Low</option><option value="medium" selected>Medium</option><option value="high">High</option><option value="urgent">Urgent</option></select></div>
               <div class="input-group"><label>Budget</label><input type="text" class="input" id="npBudget" placeholder="$5,000"></div>
             </div>
@@ -255,6 +261,34 @@
           <span id="unreadBadge" style="display:none;background:var(--accent);color:#111;padding:4px 12px;border-radius:999px;font-size:var(--text-xs);font-weight:700;"></span>
         </div>
         <div class="admin-panel"><div id="clientMessagesTable"></div></div>
+        <!-- Reply Panel (hidden by default) -->
+        <div id="replyPanel" style="display:none;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--space-lg);">
+            <button class="btn btn--ghost btn--sm" onclick="closeReplyPanel()">← Back to Messages</button>
+            <h3 id="replyPanelTitle" style="font-size:var(--text-lg);">Reply to Message</h3>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-lg);">
+            <div>
+              <div class="admin-panel">
+                <div class="admin-panel__title">Original Message</div>
+                <div id="replyOriginalMsg"></div>
+              </div>
+              <div class="admin-panel">
+                <div class="admin-panel__title">Reply</div>
+                <div class="input-group">
+                  <textarea class="input" id="replyContent" rows="4" placeholder="Type your reply..."></textarea>
+                </div>
+                <button class="btn btn--primary btn--sm" onclick="sendReply()">Send Reply</button>
+              </div>
+            </div>
+            <div>
+              <div class="admin-panel">
+                <div class="admin-panel__title">Conversation Thread</div>
+                <div id="replyThread" style="min-height:100px;max-height:400px;overflow-y:auto;display:flex;flex-direction:column;gap:var(--space-sm);"></div>
+              </div>
+            </div>
+          </div>
+        </div>
       </section>
 
       <!-- Users -->
@@ -528,158 +562,224 @@
 
     // ==================== CLIENT PROJECTS ====================
     let currentProjectId = null;
+    // Store project data so we don't rely on inline onclick string escaping
+    const _projectStore = {};
+    const _msgStore = {};
 
-    async function loadProjects() {
+    function showProjectsList() {
+      const section = document.getElementById('section-projects');
+      section.querySelector('.admin-header').style.display = '';
+      document.getElementById('projectStats').style.display = '';
+      document.getElementById('projectsTable').closest('.admin-panel').style.display = '';
       document.getElementById('projectDetail').style.display = 'none';
       document.getElementById('newProjectForm').style.display = 'none';
-      document.getElementById('projectsTable').parentElement.parentElement.querySelector('.admin-header').style.display = '';
-      document.getElementById('projectStats').style.display = '';
-
-      const data = await adminFetch(API + '/projects');
-      if (!data) return;
-      const projects = data.projects;
-      const stats = { pending: 0, in_progress: 0, review: 0, completed: 0, on_hold: 0 };
-      projects.forEach(p => { if (stats[p.status] !== undefined) stats[p.status]++; });
-
-      document.getElementById('projectStats').innerHTML = `
-        <div class="stat-card"><div class="stat-card__label">Total Projects</div><div class="stat-card__value">${projects.length}</div></div>
-        <div class="stat-card"><div class="stat-card__label">In Progress</div><div class="stat-card__value">${stats.in_progress}</div></div>
-        <div class="stat-card"><div class="stat-card__label">Pending</div><div class="stat-card__value">${stats.pending}</div></div>
-        <div class="stat-card"><div class="stat-card__label">Completed</div><div class="stat-card__value">${stats.completed}</div></div>
-      `;
-
-      const statusColors = { pending: 'var(--accent)', in_progress: '#3b82f6', review: '#8b5cf6', completed: 'var(--color-success)', on_hold: '#6b7280' };
-      document.getElementById('projectsTable').innerHTML = projects.length
-        ? `<table class="admin-table"><thead><tr><th>Title</th><th>Client</th><th>Status</th><th>Progress</th><th>Deadline</th><th>Messages</th><th>Actions</th></tr></thead><tbody>${projects.map(p => `<tr style="cursor:pointer;" onclick="openProject('${p.id}')">
-            <td style="font-weight:600;">${esc(p.title)}</td>
-            <td>${esc(p.clientName)}</td>
-            <td><span style="display:inline-flex;align-items:center;gap:6px;font-size:var(--text-xs);font-weight:600;color:${statusColors[p.status] || 'var(--text-dim)'};"><span style="width:8px;height:8px;border-radius:50%;background:${statusColors[p.status] || 'var(--text-dim)'};"></span>${p.status.replace('_', ' ')}</span></td>
-            <td><div style="width:80px;height:6px;background:var(--bg-soft);border-radius:3px;overflow:hidden;"><div style="width:${p.progress}%;height:100%;background:var(--accent);border-radius:3px;"></div></div><span style="font-size:.7rem;color:var(--text-dim);margin-left:6px;">${p.progress}%</span></td>
-            <td style="font-size:var(--text-xs);color:var(--text-dim);">${p.deadline ? new Date(p.deadline).toLocaleDateString() : '—'}</td>
-            <td style="font-size:var(--text-xs);">${p._count.messages > 0 ? `<span style="color:var(--accent);">${p._count.messages}</span>` : '—'}</td>
-            <td><button class="btn btn--ghost btn--sm" onclick="event.stopPropagation();openProject('${p.id}')">View</button></td>
-          </tr>`).join('')}</tbody></table>`
-        : '<p style="color:var(--text-dim);text-align:center;padding:var(--space-2xl);">No client projects yet. Click "+ New Project" to get started.</p>';
     }
 
-    window.openProject = async (id) => {
-      currentProjectId = id;
-      const data = await adminFetch(API + '/projects/' + id);
-      if (!data) return;
-      const p = data.project;
-      document.getElementById('projectsTable').parentElement.parentElement.querySelector('.admin-header').style.display = 'none';
-      document.getElementById('projectStats').style.display = 'none';
-      document.getElementById('projectsTable').parentElement.parentElement.querySelector('.admin-panel').style.display = 'none';
-      document.getElementById('projectDetail').style.display = 'block';
+    async function loadProjects() {
+      showProjectsList();
+      try {
+        const data = await adminFetch(API + '/projects');
+        if (!data) return;
+        const projects = data.projects;
+        const stats = { received: 0, thinking: 0, building: 0, ready: 0, payment_left: 0 };
+        projects.forEach(p => { if (stats[p.status] !== undefined) stats[p.status]++; });
 
-      // Actions
-      document.getElementById('projectDetailActions').innerHTML = `
-        <select class="input" style="width:auto;padding:6px 12px;font-size:var(--text-xs);" onchange="updateProjectStatus('${id}',this.value)">
-          <option value="pending" ${p.status==='pending'?'selected':''}>Pending</option>
-          <option value="in_progress" ${p.status==='in_progress'?'selected':''}>In Progress</option>
-          <option value="review" ${p.status==='review'?'selected':''}>Review</option>
-          <option value="completed" ${p.status==='completed'?'selected':''}>Completed</option>
-          <option value="on_hold" ${p.status==='on_hold'?'selected':''}>On Hold</option>
-        </select>
-        <button class="btn btn--ghost btn--sm" onclick="deleteProject('${id}')" style="color:var(--color-error);">Delete</button>
-      `;
+        document.getElementById('projectStats').innerHTML = `
+          <div class="stat-card"><div class="stat-card__label">Total Projects</div><div class="stat-card__value">${projects.length}</div></div>
+          <div class="stat-card"><div class="stat-card__label">Building</div><div class="stat-card__value">${stats.building}</div></div>
+          <div class="stat-card"><div class="stat-card__label">Thinking</div><div class="stat-card__value">${stats.thinking}</div></div>
+          <div class="stat-card"><div class="stat-card__label">Ready</div><div class="stat-card__value">${stats.ready}</div></div>
+        `;
 
-      // Details
-      document.getElementById('projectDetails').innerHTML = `
-        <div style="font-size:var(--text-sm);display:flex;flex-direction:column;gap:var(--space-sm);">
-          <div><span style="color:var(--text-dim);">Client:</span> <strong>${esc(p.clientName)}</strong></div>
-          <div><span style="color:var(--text-dim);">Email:</span> ${esc(p.clientEmail)}</div>
-          <div><span style="color:var(--text-dim);">Budget:</span> ${esc(p.budget || 'Not set')}</div>
-          <div><span style="color:var(--text-dim);">Start:</span> ${p.startDate ? new Date(p.startDate).toLocaleDateString() : 'Not set'}</div>
-          <div><span style="color:var(--text-dim);">Deadline:</span> ${p.deadline ? new Date(p.deadline).toLocaleDateString() : 'Not set'}</div>
-          <div><span style="color:var(--text-dim);">Description:</span> ${esc(p.description || 'None')}</div>
-        </div>
-      `;
+        // Store projects and render table with data-idx attributes (no inline onclick with strings)
+        projects.forEach((p, i) => { _projectStore[p.id] = p; });
+        const statusColors = { received: 'var(--accent)', thinking: '#8b5cf6', building: '#3b82f6', ready: 'var(--color-success)', payment_left: '#f59e0b' };
+        document.getElementById('projectsTable').innerHTML = projects.length
+          ? '<table class="admin-table"><thead><tr><th>Title</th><th>Client</th><th>Status</th><th>Progress</th><th>Deadline</th><th>Messages</th><th>Actions</th></tr></thead><tbody>'
+            + projects.map(p => {
+              const sc = statusColors[p.status] || 'var(--text-dim)';
+              const statusLabel = p.status.replace('_', ' ');
+              return '<tr data-pid="' + p.id + '">'
+                + '<td style="font-weight:600;">' + esc(p.title) + '</td>'
+                + '<td>' + esc(p.clientName) + '</td>'
+                + '<td><span style="display:inline-flex;align-items:center;gap:6px;font-size:var(--text-xs);font-weight:600;color:' + sc + ';"><span style="width:8px;height:8px;border-radius:50%;background:' + sc + ';"></span>' + statusLabel + '</span></td>'
+                + '<td><div style="width:80px;height:6px;background:var(--bg-soft);border-radius:3px;overflow:hidden;"><div style="width:' + p.progress + '%;height:100%;background:var(--accent);border-radius:3px;"></div></div><span style="font-size:.7rem;color:var(--text-dim);margin-left:6px;">' + p.progress + '%</span></td>'
+                + '<td style="font-size:var(--text-xs);color:var(--text-dim);">' + (p.deadline ? new Date(p.deadline).toLocaleDateString() : '—') + '</td>'
+                + '<td style="font-size:var(--text-xs);">' + (p._count.messages > 0 ? '<span style="color:var(--accent);">' + p._count.messages + '</span>' : '—') + '</td>'
+                + '<td><button class="btn btn--ghost btn--sm js-view-project" data-id="' + p.id + '">View</button></td>'
+                + '</tr>';
+            }).join('')
+            + '</tbody></table>'
+          : '<p style="color:var(--text-dim);text-align:center;padding:var(--space-2xl);">No client projects yet. Click "+ New Project" to get started.</p>';
+      } catch (err) {
+        console.error('loadProjects error:', err);
+        showToast('Failed to load projects.', 'error');
+      }
+    }
 
-      // Progress
-      document.getElementById('projectProgress').innerHTML = `
-        <div style="display:flex;align-items:center;gap:var(--space-md);margin-bottom:var(--space-sm);">
-          <input type="range" min="0" max="100" value="${p.progress}" style="flex:1;accent-color:var(--accent);" onchange="updateProjectProgress('${id}',this.value)">
-          <span style="font-weight:700;color:var(--accent);min-width:40px;text-align:right;">${p.progress}%</span>
-        </div>
-        <div style="font-size:var(--text-xs);color:var(--text-dim);">Drag to update progress</div>
-      `;
+    // Event delegation for project table clicks
+    document.getElementById('projectsTable').addEventListener('click', function(e) {
+      // Click on View button
+      const viewBtn = e.target.closest('.js-view-project');
+      if (viewBtn) { e.stopPropagation(); openProject(viewBtn.dataset.id); return; }
+      // Click on table row
+      const row = e.target.closest('tr[data-pid]');
+      if (row) { openProject(row.dataset.pid); }
+    });
 
-      // Updates
-      document.getElementById('projectUpdates').innerHTML = p.updates.length
-        ? p.updates.map(u => `<div style="padding:var(--space-md) 0;border-bottom:1px solid var(--border);"><div style="display:flex;justify-content:space-between;margin-bottom:4px;"><strong style="font-size:var(--text-sm);">${esc(u.title)}</strong><span style="font-size:var(--text-xs);color:var(--text-dim);">${new Date(u.createdAt).toLocaleDateString()}</span></div><p style="font-size:var(--text-sm);color:var(--text-dim);">${esc(u.content)}</p></div>`).join('')
-        : '<p style="color:var(--text-dim);font-size:var(--text-sm);">No updates yet.</p>';
+    window.openProject = async function(id) {
+      try {
+        currentProjectId = id;
+        const data = await adminFetch(API + '/projects/' + id);
+        if (!data || !data.project) { showToast('Project not found.', 'error'); return; }
+        const p = data.project;
+        const section = document.getElementById('section-projects');
+        section.querySelector('.admin-header').style.display = 'none';
+        document.getElementById('projectStats').style.display = 'none';
+        document.getElementById('projectsTable').closest('.admin-panel').style.display = 'none';
+        document.getElementById('projectDetail').style.display = 'block';
 
-      // Messages
-      document.getElementById('projectMessages').innerHTML = p.messages.length
-        ? p.messages.map(m => `<div style="padding:8px 12px;border-radius:12px;max-width:80%;${m.sender==='admin'?'background:var(--accent);color:#111;align-self:flex-end;border-bottom-right-radius:4px;':'background:var(--bg-soft);border:1px solid var(--border);align-self:flex-start;border-bottom-left-radius:4px;'}"><div style="font-size:var(--text-xs);font-weight:600;margin-bottom:2px;opacity:.7;">${esc(m.senderName)}</div><div style="font-size:var(--text-sm);">${esc(m.content)}</div></div>`).join('')
-        : '<p style="color:var(--text-dim);font-size:var(--text-sm);">No messages yet.</p>';
-      document.getElementById('projectMessages').scrollTop = document.getElementById('projectMessages').scrollHeight;
+        // Status options
+        const statuses = [
+          { v: 'received', l: 'Received' },
+          { v: 'thinking', l: 'Thinking' },
+          { v: 'building', l: 'Building' },
+          { v: 'ready', l: 'Ready' },
+          { v: 'payment_left', l: 'Payment Left' }
+        ];
+        let statusOpts = statuses.map(s => '<option value="' + s.v + '"' + (p.status === s.v ? ' selected' : '') + '>' + s.l + '</option>').join('');
+
+        document.getElementById('projectDetailActions').innerHTML =
+          '<select class="input" id="statusSelect" style="width:auto;padding:6px 12px;font-size:var(--text-xs);">' + statusOpts + '</select>'
+          + ' <button class="btn btn--ghost btn--sm" id="deleteProjectBtn" style="color:var(--color-error);">Delete</button>';
+
+        // Wire up status select with event listener (not inline onchange)
+        document.getElementById('statusSelect').addEventListener('change', function() { updateProjectStatus(id, this.value); });
+        document.getElementById('deleteProjectBtn').addEventListener('click', function() { deleteProject(id); });
+
+        // Details
+        document.getElementById('projectDetails').innerHTML =
+          '<div style="font-size:var(--text-sm);display:flex;flex-direction:column;gap:var(--space-sm);">'
+          + '<div><span style="color:var(--text-dim);">Client:</span> <strong>' + esc(p.clientName) + '</strong></div>'
+          + '<div><span style="color:var(--text-dim);">Email:</span> ' + esc(p.clientEmail) + '</div>'
+          + '<div><span style="color:var(--text-dim);">Budget:</span> ' + esc(p.budget || 'Not set') + '</div>'
+          + '<div><span style="color:var(--text-dim);">Start:</span> ' + (p.startDate ? new Date(p.startDate).toLocaleDateString() : 'Not set') + '</div>'
+          + '<div><span style="color:var(--text-dim);">Deadline:</span> ' + (p.deadline ? new Date(p.deadline).toLocaleDateString() : 'Not set') + '</div>'
+          + '<div><span style="color:var(--text-dim);">Description:</span> ' + esc(p.description || 'None') + '</div>'
+          + '</div>';
+
+        // Progress
+        document.getElementById('projectProgress').innerHTML =
+          '<div style="display:flex;align-items:center;gap:var(--space-md);margin-bottom:var(--space-sm);">'
+          + '<input type="range" min="0" max="100" value="' + p.progress + '" id="progressRange" style="flex:1;accent-color:var(--accent);">'
+          + '<span id="progressLabel" style="font-weight:700;color:var(--accent);min-width:40px;text-align:right;">' + p.progress + '%</span>'
+          + '</div><div style="font-size:var(--text-xs);color:var(--text-dim);">Drag to update progress</div>';
+        document.getElementById('progressRange').addEventListener('change', function() {
+          document.getElementById('progressLabel').textContent = this.value + '%';
+          updateProjectProgress(id, this.value);
+        });
+
+        // Updates
+        document.getElementById('projectUpdates').innerHTML = p.updates.length
+          ? p.updates.map(u =>
+              '<div style="padding:var(--space-md) 0;border-bottom:1px solid var(--border);">'
+              + '<div style="display:flex;justify-content:space-between;margin-bottom:4px;">'
+              + '<strong style="font-size:var(--text-sm);">' + esc(u.title) + '</strong>'
+              + '<span style="font-size:var(--text-xs);color:var(--text-dim);">' + new Date(u.createdAt).toLocaleDateString() + '</span>'
+              + '</div><p style="font-size:var(--text-sm);color:var(--text-dim);">' + esc(u.content) + '</p></div>'
+            ).join('')
+          : '<p style="color:var(--text-dim);font-size:var(--text-sm);">No updates yet.</p>';
+
+        // Messages
+        renderProjectChat(p.messages);
+      } catch (err) {
+        console.error('openProject error:', err);
+        showToast('Failed to load project.', 'error');
+      }
     };
 
-    window.closeProjectDetail = () => {
-      document.getElementById('projectDetail').style.display = 'none';
-      document.getElementById('projectsTable').parentElement.parentElement.querySelector('.admin-header').style.display = '';
-      document.getElementById('projectStats').style.display = '';
-      document.getElementById('projectsTable').parentElement.parentElement.querySelector('.admin-panel').style.display = '';
+    function renderProjectChat(messages) {
+      const el = document.getElementById('projectMessages');
+      el.innerHTML = messages.length
+        ? messages.map(m => {
+            const isAdmin = m.sender === 'admin';
+            const bg = isAdmin ? 'background:var(--accent);color:#111;align-self:flex-end;border-bottom-right-radius:4px;' : 'background:var(--bg-soft);border:1px solid var(--border);align-self:flex-start;border-bottom-left-radius:4px;';
+            return '<div style="padding:8px 12px;border-radius:12px;max-width:80%;' + bg + '">'
+              + '<div style="font-size:var(--text-xs);font-weight:600;margin-bottom:2px;opacity:.7;">' + esc(m.senderName) + '</div>'
+              + '<div style="font-size:var(--text-sm);">' + esc(m.content) + '</div>'
+              + '<div style="font-size:0.6rem;opacity:.5;margin-top:4px;">' + new Date(m.createdAt).toLocaleString() + '</div>'
+              + '</div>';
+          }).join('')
+        : '<p style="color:var(--text-dim);font-size:var(--text-sm);">No messages yet.</p>';
+      el.scrollTop = el.scrollHeight;
+    }
+
+    window.closeProjectDetail = function() {
+      showProjectsList();
       loadProjects();
     };
 
-    window.updateProjectStatus = async (id, status) => {
-      await adminFetch(API + '/projects/' + id, { method: 'PUT', headers: authHeaders(), body: JSON.stringify({ status }) });
-      showToast('Status updated!');
+    window.updateProjectStatus = async function(id, status) {
+      try {
+        await adminFetch(API + '/projects/' + id, { method: 'PUT', headers: authHeaders(), body: JSON.stringify({ status }) });
+        showToast('Status updated to ' + status.replace('_', ' ') + '!');
+        openProject(id);
+      } catch (err) { console.error(err); showToast('Failed to update status.', 'error'); }
     };
 
-    window.updateProjectProgress = async (id, progress) => {
-      await adminFetch(API + '/projects/' + id, { method: 'PUT', headers: authHeaders(), body: JSON.stringify({ progress: parseInt(progress) }) });
-      showToast('Progress updated!');
-      openProject(id);
+    window.updateProjectProgress = async function(id, progress) {
+      try {
+        await adminFetch(API + '/projects/' + id, { method: 'PUT', headers: authHeaders(), body: JSON.stringify({ progress: parseInt(progress) }) });
+        showToast('Progress updated!');
+      } catch (err) { console.error(err); }
     };
 
-    window.deleteProject = async (id) => {
+    window.deleteProject = async function(id) {
       if (!confirm('Delete this project and all its data?')) return;
-      await adminFetch(API + '/projects/' + id, { method: 'DELETE' });
-      showToast('Project deleted.');
-      closeProjectDetail();
+      try {
+        await adminFetch(API + '/projects/' + id, { method: 'DELETE' });
+        showToast('Project deleted.');
+        closeProjectDetail();
+      } catch (err) { console.error(err); showToast('Failed to delete.', 'error'); }
     };
 
-    window.addProjectUpdate = async () => {
+    window.addProjectUpdate = async function() {
       if (!currentProjectId) return;
       const title = document.getElementById('updateTitle').value.trim();
       const content = document.getElementById('updateContent').value.trim();
       if (!title || !content) return showToast('Fill in title and content.', 'error');
-      await adminFetch(API + '/projects/' + currentProjectId + '/updates', { method: 'POST', headers: authHeaders(), body: JSON.stringify({ title, content }) });
-      document.getElementById('updateTitle').value = '';
-      document.getElementById('updateContent').value = '';
-      showToast('Update posted!');
-      openProject(currentProjectId);
+      try {
+        await adminFetch(API + '/projects/' + currentProjectId + '/updates', { method: 'POST', headers: authHeaders(), body: JSON.stringify({ title, content }) });
+        document.getElementById('updateTitle').value = '';
+        document.getElementById('updateContent').value = '';
+        showToast('Update posted!');
+        openProject(currentProjectId);
+      } catch (err) { console.error(err); showToast('Failed to post update.', 'error'); }
     };
 
-    window.sendProjectMessage = async () => {
+    window.sendProjectMessage = async function() {
       if (!currentProjectId) return;
       const content = document.getElementById('projectMsgInput').value.trim();
       if (!content) return;
-      await adminFetch(API + '/client-messages', { method: 'POST', headers: authHeaders(), body: JSON.stringify({ projectId: currentProjectId, content, sender: 'admin', senderName: 'Admin' }) });
-      document.getElementById('projectMsgInput').value = '';
-      openProject(currentProjectId);
+      try {
+        await adminFetch(API + '/client-messages', { method: 'POST', headers: authHeaders(), body: JSON.stringify({ projectId: currentProjectId, content, sender: 'admin', senderName: 'Admin' }) });
+        document.getElementById('projectMsgInput').value = '';
+        openProject(currentProjectId);
+      } catch (err) { console.error(err); showToast('Failed to send message.', 'error'); }
     };
 
-    window.closeNewProject = () => {
-      document.getElementById('newProjectForm').style.display = 'none';
-      document.getElementById('projectsTable').parentElement.parentElement.querySelector('.admin-header').style.display = '';
-      document.getElementById('projectStats').style.display = '';
-      document.getElementById('projectsTable').parentElement.parentElement.querySelector('.admin-panel').style.display = '';
-    };
+    window.closeNewProject = function() { showProjectsList(); };
 
-    document.getElementById('addProjectBtn2')?.addEventListener('click', () => {
+    document.getElementById('addProjectBtn2')?.addEventListener('click', function() {
       document.getElementById('newProjectForm').style.display = 'block';
       document.getElementById('projectDetail').style.display = 'none';
-      document.getElementById('projectsTable').parentElement.parentElement.querySelector('.admin-header').style.display = 'none';
+      const section = document.getElementById('section-projects');
+      section.querySelector('.admin-header').style.display = 'none';
       document.getElementById('projectStats').style.display = 'none';
-      document.getElementById('projectsTable').parentElement.parentElement.querySelector('.admin-panel').style.display = 'none';
+      document.getElementById('projectsTable').closest('.admin-panel').style.display = 'none';
     });
 
-    window.createProject = async () => {
+    window.createProject = async function() {
       const data = {
         title: document.getElementById('npTitle').value.trim(),
         clientName: document.getElementById('npClientName').value.trim(),
@@ -692,35 +792,151 @@
         deadline: document.getElementById('npDeadline').value || null,
       };
       if (!data.title || !data.clientName || !data.clientEmail) return showToast('Title, client name, and email are required.', 'error');
-      await adminFetch(API + '/projects', { method: 'POST', headers: authHeaders(), body: JSON.stringify(data) });
-      showToast('Project created!');
-      document.getElementById('npTitle').value = '';
-      document.getElementById('npClientName').value = '';
-      document.getElementById('npClientEmail').value = '';
-      document.getElementById('npDescription').value = '';
-      document.getElementById('npBudget').value = '';
-      closeNewProject();
-      loadProjects();
+      try {
+        await adminFetch(API + '/projects', { method: 'POST', headers: authHeaders(), body: JSON.stringify(data) });
+        showToast('Project created!');
+        ['npTitle','npClientName','npClientEmail','npDescription','npBudget'].forEach(id => document.getElementById(id).value = '');
+        closeNewProject();
+        loadProjects();
+      } catch (err) { console.error(err); showToast('Failed to create project.', 'error'); }
     };
 
     // ==================== CLIENT MESSAGES ====================
-    async function loadClientMessages() {
-      const data = await adminFetch(API + '/client-messages');
-      if (!data) return;
-      const badge = document.getElementById('unreadBadge');
-      if (data.unread > 0) { badge.style.display = ''; badge.textContent = data.unread + ' unread'; }
-      else { badge.style.display = 'none'; }
+    let replyProjectId = null;
 
-      document.getElementById('clientMessagesTable').innerHTML = data.messages.length
-        ? `<table class="admin-table"><thead><tr><th>From</th><th>Project</th><th>Message</th><th>Time</th><th>Status</th></tr></thead><tbody>${data.messages.map(m => `<tr>
-            <td><div style="font-weight:600;font-size:var(--text-sm);">${esc(m.senderName)}</div><div style="font-size:var(--text-xs);color:var(--text-dim);">${esc(m.senderEmail || '')}</div></td>
-            <td style="font-size:var(--text-sm);">${m.project ? esc(m.project.title) : '<span style="color:var(--text-dim);">—</span>'}</td>
-            <td style="max-width:250px;overflow:hidden;text-overflow:ellipsis;font-size:var(--text-sm);">${esc(m.content)}</td>
-            <td style="font-size:var(--text-xs);color:var(--text-dim);">${new Date(m.createdAt).toLocaleString()}</td>
-            <td>${m.read ? '<span class="status-badge status-badge--read">Read</span>' : '<span class="status-badge status-badge--new">New</span>'}</td>
-          </tr>`).join('')}</tbody></table>`
-        : '<p style="color:var(--text-dim);text-align:center;padding:var(--space-2xl);">No client messages yet.</p>';
+    async function loadClientMessages() {
+      document.getElementById('replyPanel').style.display = 'none';
+      document.getElementById('clientMessagesTable').parentElement.style.display = '';
+
+      try {
+        const data = await adminFetch(API + '/client-messages');
+        if (!data) return;
+        const badge = document.getElementById('unreadBadge');
+        if (data.unread > 0) { badge.style.display = ''; badge.textContent = data.unread + ' unread'; }
+        else { badge.style.display = 'none'; }
+
+        // Store messages for retrieval by event delegation
+        data.messages.forEach(m => { _msgStore[m.id] = m; });
+
+        if (!data.messages.length) {
+          document.getElementById('clientMessagesTable').innerHTML = '<p style="color:var(--text-dim);text-align:center;padding:var(--space-2xl);">No client messages yet.</p>';
+          return;
+        }
+
+        let html = '<table class="admin-table"><thead><tr><th>From</th><th>Project</th><th>Message</th><th>Time</th><th>Status</th><th>Actions</th></tr></thead><tbody>';
+        data.messages.forEach(m => {
+          html += '<tr data-mid="' + m.id + '">'
+            + '<td><div style="font-weight:600;font-size:var(--text-sm);">' + esc(m.senderName) + '</div><div style="font-size:var(--text-xs);color:var(--text-dim);">' + esc(m.senderEmail || '') + '</div></td>'
+            + '<td style="font-size:var(--text-sm);">' + (m.project ? esc(m.project.title) : '<span style="color:var(--text-dim);">—</span>') + '</td>'
+            + '<td style="max-width:250px;overflow:hidden;text-overflow:ellipsis;font-size:var(--text-sm);">' + esc(m.content) + '</td>'
+            + '<td style="font-size:var(--text-xs);color:var(--text-dim);">' + new Date(m.createdAt).toLocaleString() + '</td>'
+            + '<td>' + (m.read ? '<span class="status-badge status-badge--read">Read</span>' : '<span class="status-badge status-badge--new">New</span>') + '</td>'
+            + '<td><button class="btn btn--ghost btn--sm js-reply-msg" data-id="' + m.id + '">Reply</button></td>'
+            + '</tr>';
+        });
+        html += '</tbody></table>';
+        document.getElementById('clientMessagesTable').innerHTML = html;
+      } catch (err) {
+        console.error('loadClientMessages error:', err);
+        showToast('Failed to load messages.', 'error');
+      }
     }
+
+    // Event delegation for reply buttons
+    document.getElementById('clientMessagesTable').addEventListener('click', function(e) {
+      const btn = e.target.closest('.js-reply-msg');
+      if (btn) { openReply(btn.dataset.id); }
+    });
+
+    window.openReply = async function(msgId) {
+      try {
+        const m = _msgStore[msgId];
+        if (!m) { showToast('Message not found.', 'error'); return; }
+
+        replyProjectId = m.projectId || null;
+
+        document.getElementById('clientMessagesTable').parentElement.style.display = 'none';
+        document.getElementById('replyPanel').style.display = 'block';
+
+        // Mark as read
+        if (!m.read) {
+          await adminFetch(API + '/client-messages/' + msgId + '/read', { method: 'PATCH' });
+        }
+
+        document.getElementById('replyPanelTitle').textContent = 'Reply to ' + m.senderName;
+        document.getElementById('replyOriginalMsg').innerHTML =
+          '<div style="font-size:var(--text-sm);display:flex;flex-direction:column;gap:var(--space-sm);">'
+          + '<div><span style="color:var(--text-dim);">From:</span> <strong>' + esc(m.senderName) + '</strong> ' + (m.senderEmail ? '<span style="color:var(--text-dim);">(' + esc(m.senderEmail) + ')</span>' : '') + '</div>'
+          + '<div><span style="color:var(--text-dim);">Time:</span> ' + new Date(m.createdAt).toLocaleString() + '</div>'
+          + '<div style="padding:var(--space-md);background:var(--bg-soft);border-radius:var(--radius-md);margin-top:var(--space-sm);">' + esc(m.content) + '</div>'
+          + '</div>';
+
+        // Load conversation thread
+        const thread = document.getElementById('replyThread');
+        if (m.projectId) {
+          const projData = await adminFetch(API + '/projects/' + m.projectId);
+          if (projData && projData.project) {
+            const msgs = projData.project.messages || [];
+            thread.innerHTML = msgs.length
+              ? msgs.map(msg => {
+                  const isAdmin = msg.sender === 'admin';
+                  const bg = isAdmin ? 'background:var(--accent);color:#111;align-self:flex-end;border-bottom-right-radius:4px;' : 'background:var(--bg-soft);border:1px solid var(--border);align-self:flex-start;border-bottom-left-radius:4px;';
+                  return '<div style="padding:8px 12px;border-radius:12px;max-width:85%;' + bg + '">'
+                    + '<div style="font-size:var(--text-xs);font-weight:600;margin-bottom:2px;opacity:.7;">' + esc(msg.senderName) + '</div>'
+                    + '<div style="font-size:var(--text-sm);">' + esc(msg.content) + '</div>'
+                    + '<div style="font-size:0.6rem;opacity:.5;margin-top:4px;">' + new Date(msg.createdAt).toLocaleString() + '</div>'
+                    + '</div>';
+                }).join('')
+              : '<p style="color:var(--text-dim);font-size:var(--text-sm);text-align:center;">No messages in this thread yet.</p>';
+            thread.scrollTop = thread.scrollHeight;
+          } else {
+            thread.innerHTML = '<p style="color:var(--text-dim);font-size:var(--text-sm);">Could not load conversation.</p>';
+          }
+        } else {
+          thread.innerHTML = '<p style="color:var(--text-dim);font-size:var(--text-sm);text-align:center;">This message is not linked to a project.</p>';
+        }
+      } catch (err) {
+        console.error('openReply error:', err);
+        showToast('Failed to open message.', 'error');
+      }
+    };
+
+    window.closeReplyPanel = function() {
+      document.getElementById('replyPanel').style.display = 'none';
+      document.getElementById('clientMessagesTable').parentElement.style.display = '';
+      loadClientMessages();
+    };
+
+    window.sendReply = async function() {
+      const content = document.getElementById('replyContent').value.trim();
+      if (!content) return showToast('Type a reply first.', 'error');
+      if (!replyProjectId) return showToast('This message is not linked to a project. Reply from the project detail instead.', 'error');
+      try {
+        await adminFetch(API + '/client-messages', {
+          method: 'POST',
+          headers: authHeaders(),
+          body: JSON.stringify({ projectId: replyProjectId, content, sender: 'admin', senderName: 'Admin' }),
+        });
+        document.getElementById('replyContent').value = '';
+        showToast('Reply sent!');
+        // Reload the thread
+        const projData = await adminFetch(API + '/projects/' + replyProjectId);
+        if (projData && projData.project) {
+          const thread = document.getElementById('replyThread');
+          const msgs = projData.project.messages || [];
+          thread.innerHTML = msgs.map(msg => {
+            const isAdmin = msg.sender === 'admin';
+            const bg = isAdmin ? 'background:var(--accent);color:#111;align-self:flex-end;border-bottom-right-radius:4px;' : 'background:var(--bg-soft);border:1px solid var(--border);align-self:flex-start;border-bottom-left-radius:4px;';
+            return '<div style="padding:8px 12px;border-radius:12px;max-width:85%;' + bg + '">'
+              + '<div style="font-size:var(--text-xs);font-weight:600;margin-bottom:2px;opacity:.7;">' + esc(msg.senderName) + '</div>'
+              + '<div style="font-size:var(--text-sm);">' + esc(msg.content) + '</div>'
+              + '<div style="font-size:0.6rem;opacity:.5;margin-top:4px;">' + new Date(msg.createdAt).toLocaleString() + '</div>'
+              + '</div>';
+          }).join('');
+          thread.scrollTop = thread.scrollHeight;
+        }
+      } catch (err) { console.error(err); showToast('Failed to send reply.', 'error'); }
+    };
 
     async function loadDashboard() {
       const data = await adminFetch(API + '/dashboard');
@@ -966,6 +1182,11 @@
     });
 
     function esc(s) { if (!s) return ''; const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+
+    // Enter key to send project message
+    document.getElementById('projectMsgInput')?.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') { e.preventDefault(); sendProjectMessage(); }
+    });
 
     // Init
     checkAdmin();

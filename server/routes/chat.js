@@ -20,7 +20,7 @@ async function buildSystemPrompt() {
   const prisma = getPrisma();
   const configs = await prisma.chatbotConfig.findMany();
   const config = {};
-  configs.forEach(c => { config[c.key] = JSON.parse(c.value); });
+  configs.forEach(c => { try { config[c.key] = JSON.parse(c.value); } catch { config[c.key] = null; } });
 
   return `You are the official AI representative for Webore — a premium creative digital studio that builds high-end websites.
 
@@ -97,9 +97,10 @@ router.post('/', chatLimiter, async (req, res) => {
       data: { sessionId: sid, role: 'user', content: message },
     });
 
-    // Build conversation history
+    // Build conversation history (limit to last 20 messages to prevent token overflow)
     const history = session.messages.map(m => ({ role: m.role, content: m.content }));
     history.push({ role: 'user', content: message });
+    if (history.length > 20) history.splice(0, history.length - 20);
 
     // Build system prompt from DB
     const systemPrompt = await buildSystemPrompt();
@@ -204,12 +205,17 @@ router.post('/', chatLimiter, async (req, res) => {
 
 // Get chat history
 router.get('/history/:sessionId', async (req, res) => {
-  const prisma = getPrisma();
-  const messages = await prisma.chatMessage.findMany({
-    where: { sessionId: req.params.sessionId },
-    orderBy: { createdAt: 'asc' },
-  });
-  res.json({ messages });
+  try {
+    const prisma = getPrisma();
+    const messages = await prisma.chatMessage.findMany({
+      where: { sessionId: req.params.sessionId },
+      orderBy: { createdAt: 'asc' },
+    });
+    res.json({ messages });
+  } catch (err) {
+    console.error('Chat history error:', err);
+    res.json({ messages: [] });
+  }
 });
 
 export default router;

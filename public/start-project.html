@@ -1,0 +1,856 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Start a project with Webore — Tell us about your vision and we'll bring it to life.">
+  <title>Start a Project — Webore</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/variables.css">
+  <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="/css/layout.css">
+  <link rel="stylesheet" href="/css/components.css">
+  <link rel="stylesheet" href="/css/animations.css">
+  <link rel="stylesheet" href="/css/responsive.css">
+  <link rel="stylesheet" href="/css/chat.css">
+  <link rel="stylesheet" href="/css/modal.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>">
+  <style>
+    /* ===== Wizard shell ===== */
+    .wizard {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      background: var(--bg);
+      position: relative;
+      overflow: hidden;
+    }
+    .wizard::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(800px 600px at 50% 0%, rgba(245,130,13,0.04), transparent 70%);
+      pointer-events: none;
+    }
+
+    /* ===== Progress bar ===== */
+    .wizard-progress {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      z-index: 100;
+      background: var(--bg-soft);
+    }
+    .wizard-progress__fill {
+      height: 100%;
+      background: var(--accent);
+      transition: width 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+      border-radius: 0 2px 2px 0;
+    }
+
+    /* ===== Header ===== */
+    .wizard-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px var(--side-padding);
+      position: relative;
+      z-index: 10;
+    }
+    .wizard-header__back {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: var(--text-sm);
+      color: var(--text-dim);
+      cursor: pointer;
+      background: none;
+      border: none;
+      transition: color var(--transition-fast);
+      padding: 8px 0;
+    }
+    .wizard-header__back:hover { color: var(--text); }
+    .wizard-header__back:disabled { opacity: 0.3; cursor: default; }
+    .wizard-header__back svg { width: 16px; height: 16px; }
+    .wizard-header__logo { font-family: var(--font-display); font-weight: 700; font-size: 1.2rem; }
+    .wizard-header__logo span { color: var(--accent); }
+    .wizard-header__step {
+      font-size: var(--text-xs);
+      color: var(--text-dim);
+      font-weight: 500;
+      letter-spacing: 0.05em;
+    }
+
+    /* ===== Step container ===== */
+    .wizard-body {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 var(--side-padding) 120px;
+      position: relative;
+      z-index: 10;
+    }
+    .wizard-step {
+      width: 100%;
+      max-width: 640px;
+      display: none;
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 0.4s ease, transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .wizard-step.active {
+      display: block;
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .wizard-step__label {
+      font-size: var(--text-xs);
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 0.75rem;
+    }
+    .wizard-step__title {
+      font-family: var(--font-display);
+      font-size: clamp(1.6rem, 4vw, 2.2rem);
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 0.5rem;
+      line-height: 1.2;
+    }
+    .wizard-step__hint {
+      font-size: var(--text-sm);
+      color: var(--text-dim);
+      margin-bottom: var(--space-xl);
+      line-height: 1.6;
+    }
+
+    /* ===== Inputs ===== */
+    .wiz-input {
+      width: 100%;
+      background: var(--bg-soft);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 14px 18px;
+      color: var(--text);
+      font-size: var(--text-lg);
+      font-family: var(--font-display);
+      transition: border-color var(--transition-base), box-shadow var(--transition-base);
+      outline: none;
+    }
+    .wiz-input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(245, 130, 13, 0.12);
+    }
+    .wiz-input::placeholder { color: var(--text-dim); opacity: 0.5; font-family: var(--font-body); }
+    textarea.wiz-input {
+      font-family: var(--font-body);
+      font-size: var(--text-base);
+      resize: vertical;
+      min-height: 140px;
+      line-height: 1.7;
+    }
+    .wiz-input-sub {
+      width: 100%;
+      background: var(--bg-soft);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 12px 16px;
+      color: var(--text);
+      font-size: var(--text-base);
+      transition: border-color var(--transition-base), box-shadow var(--transition-base);
+      outline: none;
+      margin-top: var(--space-md);
+    }
+    .wiz-input-sub:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(245, 130, 13, 0.12);
+    }
+    .wiz-input-sub::placeholder { color: var(--text-dim); opacity: 0.5; }
+    .wiz-label {
+      font-size: var(--text-sm);
+      font-weight: 500;
+      color: var(--text-dim);
+      margin-bottom: 8px;
+      display: block;
+    }
+
+    /* ===== Option grid (single select) ===== */
+    .wiz-options {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+    .wiz-option {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 16px 18px;
+      background: var(--bg-soft);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      transition: border-color var(--transition-base), background var(--transition-base), transform var(--transition-fast);
+      user-select: none;
+    }
+    .wiz-option:hover {
+      border-color: rgba(245, 130, 13, 0.25);
+      background: rgba(245, 130, 13, 0.04);
+    }
+    .wiz-option.selected {
+      border-color: var(--accent);
+      background: rgba(245, 130, 13, 0.08);
+    }
+    .wiz-option__icon {
+      font-size: 1.3rem;
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      background: rgba(245, 130, 13, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .wiz-option__text {
+      font-size: var(--text-sm);
+      font-weight: 500;
+      color: var(--text);
+    }
+    .wiz-option.selected .wiz-option__text { color: var(--accent); }
+
+    /* ===== Checkbox grid (multi select) ===== */
+    .wiz-checks {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+    .wiz-check {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 16px;
+      background: var(--bg-soft);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      transition: border-color var(--transition-base), background var(--transition-base);
+      user-select: none;
+    }
+    .wiz-check:hover {
+      border-color: rgba(245, 130, 13, 0.2);
+    }
+    .wiz-check.selected {
+      border-color: var(--accent);
+      background: rgba(245, 130, 13, 0.08);
+    }
+    .wiz-check__box {
+      width: 20px;
+      height: 20px;
+      border-radius: 5px;
+      border: 1.5px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: background var(--transition-fast), border-color var(--transition-fast);
+    }
+    .wiz-check.selected .wiz-check__box {
+      background: var(--accent);
+      border-color: var(--accent);
+    }
+    .wiz-check__box svg {
+      width: 12px;
+      height: 12px;
+      color: #0a0a0b;
+      opacity: 0;
+      transition: opacity var(--transition-fast);
+    }
+    .wiz-check.selected .wiz-check__box svg { opacity: 1; }
+    .wiz-check__text {
+      font-size: var(--text-sm);
+      font-weight: 500;
+      color: var(--text);
+    }
+
+    /* ===== Yes/No toggle ===== */
+    .wiz-toggle {
+      display: flex;
+      gap: 12px;
+    }
+    .wiz-toggle__btn {
+      flex: 1;
+      padding: 16px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border);
+      background: var(--bg-soft);
+      font-family: var(--font-display);
+      font-size: var(--text-base);
+      font-weight: 600;
+      color: var(--text-dim);
+      cursor: pointer;
+      transition: border-color var(--transition-base), background var(--transition-base), color var(--transition-base);
+    }
+    .wiz-toggle__btn:hover {
+      border-color: rgba(245, 130, 13, 0.25);
+      color: var(--text);
+    }
+    .wiz-toggle__btn.selected {
+      border-color: var(--accent);
+      background: rgba(245, 130, 13, 0.08);
+      color: var(--accent);
+    }
+
+    /* ===== Review screen ===== */
+    .review-grid {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-md);
+    }
+    .review-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: var(--space-md);
+      padding: 14px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .review-row:last-child { border-bottom: none; }
+    .review-row__label {
+      font-size: var(--text-xs);
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      min-width: 140px;
+      flex-shrink: 0;
+    }
+    .review-row__value {
+      font-size: var(--text-sm);
+      color: var(--text);
+      text-align: right;
+      line-height: 1.5;
+    }
+
+    /* ===== Footer nav ===== */
+    .wizard-footer {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px var(--side-padding);
+      background: linear-gradient(to top, var(--bg) 60%, transparent);
+      z-index: 10;
+    }
+    .wizard-footer__next {
+      margin-left: auto;
+    }
+
+    /* ===== Success screen ===== */
+    .success-screen {
+      display: none;
+      text-align: center;
+      padding: var(--space-3xl) var(--side-padding);
+      min-height: 100vh;
+      align-items: center;
+      justify-content: center;
+    }
+    .success-screen.active { display: flex; flex-direction: column; }
+    .success-icon {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background: rgba(16, 185, 129, 0.12);
+      border: 2px solid rgba(16, 185, 129, 0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: var(--space-xl);
+    }
+    .success-icon svg { width: 36px; height: 36px; color: #10B981; }
+    .success-screen h2 {
+      font-family: var(--font-display);
+      font-size: var(--text-3xl);
+      margin-bottom: var(--space-md);
+    }
+    .success-screen p {
+      font-size: var(--text-lg);
+      color: var(--text-dim);
+      max-width: 440px;
+      line-height: 1.7;
+    }
+
+    /* ===== Responsive ===== */
+    @media (max-width: 600px) {
+      .wiz-options { grid-template-columns: 1fr; }
+      .wiz-checks { grid-template-columns: 1fr; }
+      .wizard-header { padding: 16px 20px; }
+      .wizard-body { padding: 0 20px 140px; }
+      .wizard-footer { padding: 16px 20px; }
+      .review-row { flex-direction: column; gap: 4px; }
+      .review-row__value { text-align: left; }
+    }
+
+    /* Reduced motion */
+    @media (prefers-reduced-motion: reduce) {
+      .wizard-step { transition: none; }
+      .wizard-progress__fill { transition: none; }
+      .wiz-option, .wiz-check, .wiz-toggle__btn { transition: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="cursor-glow" aria-hidden="true"></div>
+
+  <!-- Progress bar -->
+  <div class="wizard-progress" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+    <div class="wizard-progress__fill" id="progressFill" style="width:0%"></div>
+  </div>
+
+  <!-- Header -->
+  <header class="wizard-header">
+    <button class="wizard-header__back" id="backBtn" disabled aria-label="Go back">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+      Back
+    </button>
+    <a href="/" class="wizard-header__logo" aria-label="Webore Home">Web<span>ore</span></a>
+    <span class="wizard-header__step" id="stepIndicator">Step 1 of 10</span>
+  </header>
+
+  <!-- Wizard body -->
+  <main class="wizard-body" id="wizardBody">
+
+    <!-- Step 1: Full Name -->
+    <div class="wizard-step active" data-step="1">
+      <div class="wizard-step__label">01 / 10</div>
+      <h2 class="wizard-step__title">What's your <span class="text-accent">full name</span>?</h2>
+      <p class="wizard-step__hint">We'd love to know who we're working with.</p>
+      <input type="text" class="wiz-input" id="clientName" placeholder="Alex Rivera" autocomplete="name" data-key="clientName">
+    </div>
+
+    <!-- Step 2: Email + Phone -->
+    <div class="wizard-step" data-step="2">
+      <div class="wizard-step__label">02 / 10</div>
+      <h2 class="wizard-step__title">How can we <span class="text-accent">reach you</span>?</h2>
+      <p class="wizard-step__hint">Your email is required. Phone is optional.</p>
+      <div class="input-group" style="margin-bottom:var(--space-md);">
+        <label class="wiz-label" for="clientEmail">Email address *</label>
+        <input type="email" class="wiz-input" id="clientEmail" placeholder="hello@yourco.com" required autocomplete="email" data-key="clientEmail">
+      </div>
+      <div class="input-group">
+        <label class="wiz-label" for="phone">Phone (optional)</label>
+        <input type="tel" class="wiz-input-sub" id="phone" placeholder="+1 555 000 0000" autocomplete="tel" data-key="phone">
+      </div>
+    </div>
+
+    <!-- Step 3: Project Type -->
+    <div class="wizard-step" data-step="3">
+      <div class="wizard-step__label">03 / 10</div>
+      <h2 class="wizard-step__title">What <span class="text-accent">type of project</span> do you need?</h2>
+      <p class="wizard-step__hint">Pick the one that best describes your needs.</p>
+      <div class="wiz-options" id="projectTypeOptions" data-key="projectType">
+        <button class="wiz-option" data-value="web-design"><div class="wiz-option__icon">🎨</div><div class="wiz-option__text">Web Design</div></button>
+        <button class="wiz-option" data-value="web-development"><div class="wiz-option__icon">💻</div><div class="wiz-option__text">Web Development</div></button>
+        <button class="wiz-option" data-value="ecommerce"><div class="wiz-option__icon">🛒</div><div class="wiz-option__text">E-commerce</div></button>
+        <button class="wiz-option" data-value="seo"><div class="wiz-option__icon">📈</div><div class="wiz-option__text">SEO &amp; Growth</div></button>
+        <button class="wiz-option" data-value="branding"><div class="wiz-option__icon">✨</div><div class="wiz-option__text">Branding &amp; Identity</div></button>
+        <button class="wiz-option" data-value="maintenance"><div class="wiz-option__icon">🔧</div><div class="wiz-option__text">Maintenance &amp; Support</div></button>
+        <button class="wiz-option" data-value="other"><div class="wiz-option__icon">💡</div><div class="wiz-option__text">Other</div></button>
+      </div>
+    </div>
+
+    <!-- Step 4: Budget -->
+    <div class="wizard-step" data-step="4">
+      <div class="wizard-step__label">04 / 10</div>
+      <h2 class="wizard-step__title">What's your <span class="text-accent">budget range</span>?</h2>
+      <p class="wizard-step__hint">This helps us tailor the right solution for you.</p>
+      <div class="wiz-options" id="budgetOptions" data-key="budget">
+        <button class="wiz-option" data-value="under-1k"><div class="wiz-option__icon">💰</div><div class="wiz-option__text">Under ₹1,000</div></button>
+        <button class="wiz-option" data-value="1k-3k"><div class="wiz-option__icon">💎</div><div class="wiz-option__text">₹1,000 – ₹3,000</div></button>
+        <button class="wiz-option" data-value="3k-5k"><div class="wiz-option__icon">🚀</div><div class="wiz-option__text">₹3,000 – ₹5,000</div></button>
+        <button class="wiz-option" data-value="5k-plus"><div class="wiz-option__icon">🏆</div><div class="wiz-option__text">₹5,000+</div></button>
+        <button class="wiz-option" data-value="not-sure"><div class="wiz-option__icon">🤔</div><div class="wiz-option__text">Not sure yet</div></button>
+      </div>
+    </div>
+
+    <!-- Step 5: Timeline -->
+    <div class="wizard-step" data-step="5">
+      <div class="wizard-step__label">05 / 10</div>
+      <h2 class="wizard-step__title">When do you need this <span class="text-accent">completed</span>?</h2>
+      <p class="wizard-step__hint">Pick a timeline or type your own.</p>
+      <div class="wiz-options" id="timelineOptions" data-key="timeline">
+        <button class="wiz-option" data-value="ASAP"><div class="wiz-option__icon">⚡</div><div class="wiz-option__text">ASAP</div></button>
+        <button class="wiz-option" data-value="1 month"><div class="wiz-option__icon">📅</div><div class="wiz-option__text">1 month</div></button>
+        <button class="wiz-option" data-value="1-3 months"><div class="wiz-option__icon">📆</div><div class="wiz-option__text">1–3 months</div></button>
+        <button class="wiz-option" data-value="flexible"><div class="wiz-option__icon">🕐</div><div class="wiz-option__text">Flexible</div></button>
+      </div>
+    </div>
+
+    <!-- Step 6: Goals -->
+    <div class="wizard-step" data-step="6">
+      <div class="wizard-step__label">06 / 10</div>
+      <h2 class="wizard-step__title">What are your <span class="text-accent">goals</span> for this project?</h2>
+      <p class="wizard-step__hint">Tell us what success looks like to you.</p>
+      <textarea class="wiz-input" id="goals" placeholder="e.g. Increase online sales, rebrand our company, build a portfolio site..." data-key="goals"></textarea>
+    </div>
+
+    <!-- Step 7: Features -->
+    <div class="wizard-step" data-step="7">
+      <div class="wizard-step__label">07 / 10</div>
+      <h2 class="wizard-step__title">Which <span class="text-accent">features</span> do you need?</h2>
+      <p class="wizard-step__hint">Select all that apply.</p>
+      <div class="wiz-checks" id="featuresChecks" data-key="features">
+        <button class="wiz-check" data-value="Contact forms"><div class="wiz-check__box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div><div class="wiz-check__text">Contact forms</div></button>
+        <button class="wiz-check" data-value="E-commerce/checkout"><div class="wiz-check__box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div><div class="wiz-check__text">E-commerce / checkout</div></button>
+        <button class="wiz-check" data-value="Blog/CMS"><div class="wiz-check__box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div><div class="wiz-check__text">Blog / CMS</div></button>
+        <button class="wiz-check" data-value="User accounts/login"><div class="wiz-check__box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div><div class="wiz-check__text">User accounts / login</div></button>
+        <button class="wiz-check" data-value="Booking/scheduling"><div class="wiz-check__box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div><div class="wiz-check__text">Booking / scheduling</div></button>
+        <button class="wiz-check" data-value="Custom animations"><div class="wiz-check__box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div><div class="wiz-check__text">Custom animations</div></button>
+        <button class="wiz-check" data-value="Multi-language"><div class="wiz-check__box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div><div class="wiz-check__text">Multi-language</div></button>
+        <button class="wiz-check" data-value="Other"><div class="wiz-check__box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div><div class="wiz-check__text">Other</div></button>
+      </div>
+    </div>
+
+    <!-- Step 8: Existing website -->
+    <div class="wizard-step" data-step="8">
+      <div class="wizard-step__label">08 / 10</div>
+      <h2 class="wizard-step__title">Do you have an <span class="text-accent">existing website</span>?</h2>
+      <p class="wizard-step__hint">If yes, share the URL so we can take a look.</p>
+      <div class="wiz-toggle" id="existingSiteToggle" data-key="hasExistingSite">
+        <button class="wiz-toggle__btn" data-value="yes">Yes</button>
+        <button class="wiz-toggle__btn" data-value="no">No</button>
+      </div>
+      <div id="existingUrlWrap" style="display:none;margin-top:var(--space-md);">
+        <label class="wiz-label" for="existingSiteUrl">Website URL</label>
+        <input type="url" class="wiz-input-sub" id="existingSiteUrl" placeholder="https://yoursite.com" data-key="existingSiteUrl">
+      </div>
+    </div>
+
+    <!-- Step 9: Inspiration -->
+    <div class="wizard-step" data-step="9">
+      <div class="wizard-step__label">09 / 10</div>
+      <h2 class="wizard-step__title">Any <span class="text-accent">inspiration</span> or reference sites?</h2>
+      <p class="wizard-step__hint">Optional — share links or describe what you like.</p>
+      <textarea class="wiz-input" id="inspiration" placeholder="e.g. I love the clean layout of stripe.com, the animations of apple.com..." data-key="inspiration"></textarea>
+    </div>
+
+    <!-- Step 10: Review -->
+    <div class="wizard-step" data-step="10">
+      <div class="wizard-step__label">10 / 10</div>
+      <h2 class="wizard-step__title">Review your <span class="text-accent">project details</span></h2>
+      <p class="wizard-step__hint">Everything look right? Submit when you're ready.</p>
+      <div class="review-grid" id="reviewGrid"></div>
+    </div>
+  </main>
+
+  <!-- Footer nav -->
+  <footer class="wizard-footer">
+    <div></div>
+    <button class="btn btn--primary btn--lg wizard-footer__next" id="nextBtn">
+      Next <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;"><polyline points="9 18 15 12 9 6"/></svg>
+    </button>
+  </footer>
+
+  <!-- Success screen -->
+  <div class="success-screen" id="successScreen">
+    <div class="success-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+    </div>
+    <h2>You're <span class="text-accent">all set</span>!</h2>
+    <p>We've received your project request. Our team will review it and get back to you within 24 hours.</p>
+    <a href="/" class="btn btn--primary btn--lg" style="margin-top:var(--space-xl);">Back to Home</a>
+  </div>
+
+  <div id="toast" class="toast" role="alert" aria-live="polite"></div>
+
+  <script>
+    (function () {
+      'use strict';
+
+      // ===== State =====
+      var currentStep = 1;
+      var totalSteps = 10;
+      var answers = {};
+      var isSubmitting = false;
+
+      var progressFill = document.getElementById('progressFill');
+      var stepIndicator = document.getElementById('stepIndicator');
+      var backBtn = document.getElementById('backBtn');
+      var nextBtn = document.getElementById('nextBtn');
+      var wizardBody = document.getElementById('wizardBody');
+      var successScreen = document.getElementById('successScreen');
+
+      // ===== Collect all input/textarea values from the current step =====
+      function collectCurrentStep() {
+        var step = wizardBody.querySelector('[data-step="' + currentStep + '"]');
+        if (!step) return;
+        // Collect all inputs and textareas on this step
+        var inputs = step.querySelectorAll('input, textarea');
+        inputs.forEach(function (el) {
+          var key = el.dataset.key || el.id;
+          if (!key) return;
+          if (el.type === 'checkbox') return; // checkboxes handled by toggleCheck
+          answers[key] = el.value.trim();
+        });
+      }
+
+      // ===== Navigation =====
+      function updateUI() {
+        var pct = (currentStep / totalSteps) * 100;
+        progressFill.style.width = pct + '%';
+        stepIndicator.textContent = 'Step ' + currentStep + ' of ' + totalSteps;
+        backBtn.disabled = currentStep === 1;
+
+        if (currentStep === totalSteps) {
+          nextBtn.innerHTML = 'Submit <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;"><polyline points="20 6 9 17 4 12"/></svg>';
+        } else {
+          nextBtn.innerHTML = 'Next <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;"><polyline points="9 18 15 12 9 6"/></svg>';
+        }
+
+        // Show/hide steps
+        var steps = wizardBody.querySelectorAll('.wizard-step');
+        steps.forEach(function (s) { s.classList.remove('active'); });
+        var active = wizardBody.querySelector('[data-step="' + currentStep + '"]');
+        if (active) {
+          requestAnimationFrame(function () { active.classList.add('active'); });
+        }
+
+        // Populate review on step 10
+        if (currentStep === totalSteps) populateReview();
+      }
+
+      function goTo(step) {
+        if (step < 1 || step > totalSteps) return;
+        currentStep = step;
+        updateUI();
+      }
+
+      backBtn.addEventListener('click', function () {
+        if (currentStep > 1) {
+          collectCurrentStep();
+          goTo(currentStep - 1);
+        }
+      });
+
+      nextBtn.addEventListener('click', function () {
+        if (isSubmitting) return;
+        if (currentStep === totalSteps) {
+          submitForm();
+        } else {
+          // Collect first, THEN validate
+          collectCurrentStep();
+          if (!validateCurrentStep()) return;
+          goTo(currentStep + 1);
+        }
+      });
+
+      // Keyboard: Enter to advance
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' && currentStep < totalSteps) {
+          if (document.activeElement && document.activeElement.tagName === 'TEXTAREA') return;
+          e.preventDefault();
+          nextBtn.click();
+        }
+      });
+
+      // ===== Validation =====
+      function validateCurrentStep() {
+        switch (currentStep) {
+          case 1:
+            if (!answers.clientName || !answers.clientName.trim()) {
+              showToast('Please enter your name.', 'error');
+              return false;
+            }
+            return true;
+          case 2:
+            if (!answers.clientEmail || !answers.clientEmail.trim()) {
+              showToast('Please enter your email.', 'error');
+              return false;
+            }
+            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(answers.clientEmail)) {
+              showToast('Please enter a valid email address.', 'error');
+              return false;
+            }
+            return true;
+          case 3:
+            if (!answers.projectType) {
+              showToast('Please select a project type.', 'error');
+              return false;
+            }
+            return true;
+          default:
+            return true;
+        }
+      }
+
+      // ===== Event delegation for options, checks, and toggles =====
+      wizardBody.addEventListener('click', function (e) {
+        // Single-select option
+        var optBtn = e.target.closest('.wiz-option');
+        if (optBtn) {
+          var container = optBtn.closest('.wiz-options');
+          if (container) {
+            var key = container.dataset.key;
+            container.querySelectorAll('.wiz-option').forEach(function (o) { o.classList.remove('selected'); });
+            optBtn.classList.add('selected');
+            answers[key] = optBtn.dataset.value;
+          }
+          return;
+        }
+        // Multi-select checkbox
+        var checkBtn = e.target.closest('.wiz-check');
+        if (checkBtn) {
+          checkBtn.classList.toggle('selected');
+          var checkContainer = checkBtn.closest('.wiz-checks');
+          if (checkContainer) {
+            var checkKey = checkContainer.dataset.key;
+            var selected = [];
+            checkContainer.querySelectorAll('.wiz-check.selected').forEach(function (c) {
+              selected.push(c.dataset.value);
+            });
+            answers[checkKey] = selected;
+          }
+          return;
+        }
+        // Yes/No toggle
+        var toggleBtn = e.target.closest('.wiz-toggle__btn');
+        if (toggleBtn) {
+          var toggleContainer = toggleBtn.closest('.wiz-toggle');
+          if (toggleContainer) {
+            toggleContainer.querySelectorAll('.wiz-toggle__btn').forEach(function (b) { b.classList.remove('selected'); });
+            toggleBtn.classList.add('selected');
+            answers.hasExistingSite = toggleBtn.dataset.value;
+            var urlWrap = document.getElementById('existingUrlWrap');
+            urlWrap.style.display = toggleBtn.dataset.value === 'yes' ? 'block' : 'none';
+            if (toggleBtn.dataset.value === 'no') answers.existingSiteUrl = '';
+          }
+          return;
+        }
+      });
+
+      // ===== Review =====
+      var reviewLabels = {
+        clientName: 'Name',
+        clientEmail: 'Email',
+        phone: 'Phone',
+        projectType: 'Project Type',
+        budget: 'Budget',
+        timeline: 'Timeline',
+        goals: 'Goals',
+        features: 'Features',
+        hasExistingSite: 'Existing Site',
+        existingSiteUrl: 'Site URL',
+        inspiration: 'Inspiration'
+      };
+
+      var projectTypeLabels = {
+        'web-design': 'Web Design',
+        'web-development': 'Web Development',
+        'ecommerce': 'E-commerce',
+        'seo': 'SEO & Growth',
+        'branding': 'Branding & Identity',
+        'maintenance': 'Maintenance & Support',
+        'other': 'Other'
+      };
+
+      var budgetLabels = {
+        'under-1k': 'Under ₹1,000',
+        '1k-3k': '₹1,000 – ₹3,000',
+        '3k-5k': '₹3,000 – ₹5,000',
+        '5k-plus': '₹5,000+',
+        'not-sure': 'Not sure yet'
+      };
+
+      function populateReview() {
+        // Collect all text inputs one last time
+        collectCurrentStep();
+        var grid = document.getElementById('reviewGrid');
+        grid.innerHTML = '';
+        var keys = ['clientName', 'clientEmail', 'phone', 'projectType', 'budget', 'timeline', 'goals', 'features', 'hasExistingSite', 'existingSiteUrl', 'inspiration'];
+        keys.forEach(function (k) {
+          var val = answers[k];
+          if (val === undefined || val === null || val === '' || (Array.isArray(val) && val.length === 0)) return;
+          if (k === 'hasExistingSite') val = val === 'yes' ? 'Yes' : 'No';
+          if (k === 'projectType' && projectTypeLabels[val]) val = projectTypeLabels[val];
+          if (k === 'budget' && budgetLabels[val]) val = budgetLabels[val];
+          if (k === 'features' && Array.isArray(val)) val = val.join(', ');
+          var row = document.createElement('div');
+          row.className = 'review-row';
+          row.innerHTML = '<div class="review-row__label">' + reviewLabels[k] + '</div><div class="review-row__value">' + val + '</div>';
+          grid.appendChild(row);
+        });
+      }
+
+      // ===== Submit =====
+      function submitForm() {
+        if (isSubmitting) return;
+        collectCurrentStep();
+        isSubmitting = true;
+        nextBtn.disabled = true;
+        nextBtn.innerHTML = '<span class="spinner"></span> Submitting...';
+
+        var payload = {
+          clientName: answers.clientName || '',
+          clientEmail: answers.clientEmail || '',
+          phone: answers.phone || undefined,
+          projectType: answers.projectType || '',
+          budget: answers.budget || undefined,
+          timeline: answers.timeline || undefined,
+          goals: answers.goals || undefined,
+          features: (answers.features && answers.features.length > 0) ? answers.features : undefined,
+          hasExistingSite: answers.hasExistingSite || 'no',
+          existingSiteUrl: answers.existingSiteUrl || undefined,
+          inspiration: answers.inspiration || undefined,
+        };
+
+        fetch('/api/start-project', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        })
+          .then(function (res) { return res.json(); })
+          .then(function (data) {
+            if (data.success) {
+              wizardBody.style.display = 'none';
+              document.querySelector('.wizard-footer').style.display = 'none';
+              document.querySelector('.wizard-progress').style.display = 'none';
+              successScreen.classList.add('active');
+            } else {
+              showToast(data.error || 'Something went wrong. Please try again.', 'error');
+              isSubmitting = false;
+              nextBtn.disabled = false;
+              nextBtn.innerHTML = 'Submit <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;"><polyline points="20 6 9 17 4 12"/></svg>';
+            }
+          })
+          .catch(function () {
+            showToast('Network error. Please try again.', 'error');
+            isSubmitting = false;
+            nextBtn.disabled = false;
+            nextBtn.innerHTML = 'Submit <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;"><polyline points="20 6 9 17 4 12"/></svg>';
+          });
+      }
+
+      // ===== Toast =====
+      function showToast(msg, type) {
+        var toast = document.getElementById('toast');
+        toast.textContent = msg;
+        toast.className = 'toast show' + (type === 'error' ? ' toast--error' : type === 'success' ? ' toast--success' : '');
+        setTimeout(function () { toast.className = 'toast'; }, 3500);
+      }
+      window.showToast = showToast;
+
+      // ===== Init =====
+      updateUI();
+    })();
+  </script>
+</body>
+</html>

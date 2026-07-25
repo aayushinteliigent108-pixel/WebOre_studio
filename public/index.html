@@ -308,7 +308,7 @@
       <a href="/about" class="nav-overlay__link">About</a>
       <a href="/contact" class="nav-overlay__link">Contact</a>
       <a href="/dashboard" id="mobileDashboardLink" class="nav-overlay__link" style="display:none;">Dashboard</a>
-      <div class="nav-overlay__cta"><a href="/contact" class="btn btn--primary btn--lg">Start a Project</a></div>
+      <div class="nav-overlay__cta"><a href="/start-project" class="btn btn--primary btn--lg">Start a Project</a></div>
     </nav>
   </div>
 
@@ -718,7 +718,7 @@
         <h2>Ready to Transform Your <span class="text-accent">Digital Presence?</span></h2>
         <p style="margin-top:12px;margin-bottom:var(--space-xl);">Let's build something extraordinary together.</p>
         <div style="display:flex;justify-content:center;gap:14px;flex-wrap:wrap;position:relative;z-index:1;">
-          <a href="/contact" class="btn btn--primary btn--lg">Start Your Project ↗</a>
+          <a href="/start-project" class="btn btn--primary btn--lg">Start Your Project ↗</a>
           <a href="/portfolio" class="btn btn--secondary btn--lg">View Our Work</a>
         </div>
       </div>
@@ -859,23 +859,8 @@
     document.head.insertAdjacentHTML('beforeend','<style>@keyframes marqueeScroll{from{transform:translateX(0)}to{transform:translateX(-50%)}} .marquee{overflow:hidden;mask-image:linear-gradient(90deg,transparent,black 10%,black 90%,transparent);-webkit-mask-image:linear-gradient(90deg,transparent,black 10%,black 90%,transparent);}</style>');
 
     /* ============================================================
-       COUNT-UP STATS
+       COUNT-UP STATS — handled by animations.js
        ============================================================ */
-    (function(){
-      var counters=document.querySelectorAll('.stat-num');
-      var cIo=new IntersectionObserver(function(entries){
-        entries.forEach(function(e){
-          if(e.isIntersecting){
-            var el=e.target,target=+el.dataset.count;
-            var suffix=el.textContent.replace(/[0-9]/g,'');
-            var cur=0,step=Math.max(1,Math.round(target/50));
-            var t=setInterval(function(){cur+=step;if(cur>=target){cur=target;clearInterval(t);}el.textContent=cur+suffix;},28);
-            cIo.unobserve(el);
-          }
-        });
-      },{threshold:0.5});
-      counters.forEach(function(c){cIo.observe(c);});
-    })();
 
     /* ============================================================
        WORK CAROUSEL

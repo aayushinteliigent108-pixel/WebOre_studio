@@ -121,16 +121,15 @@ router.post('/logout', (req, res) => {
 });
 
 // Get current user
-router.get('/me', (req, res) => {
+router.get('/me', async (req, res) => {
   const token = req.cookies.token;
   if (!token) return res.json({ user: null });
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
     const prisma = getPrisma();
-    prisma.user.findUnique({ where: { id: decoded.id } }).then(user => {
-      if (!user) return res.json({ user: null });
-      res.json({ user: { id: user.id, email: user.email, firstName: user.firstName, lastName: user.lastName, avatar: user.avatar, role: user.role } });
-    });
+    const user = await prisma.user.findUnique({ where: { id: decoded.id } });
+    if (!user) return res.json({ user: null });
+    res.json({ user: { id: user.id, email: user.email, firstName: user.firstName, lastName: user.lastName, avatar: user.avatar, role: user.role } });
   } catch {
     res.json({ user: null });
   }

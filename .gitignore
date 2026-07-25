@@ -15,6 +15,3 @@ node_modules/
 # OS
 .DS_Store
 Thumbs.db
-
-# Prisma
-server/prisma/migrations/

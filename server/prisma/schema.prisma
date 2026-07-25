@@ -124,7 +124,7 @@ model ClientProject {
   title       String
   clientName  String
   clientEmail String
-  status      String   @default("pending")   // pending, in_progress, review, completed, on_hold
+  status      String   @default("received")  // received, thinking, building, ready, payment_left
   priority    String   @default("medium")     // low, medium, high, urgent
   description String?
   startDate   DateTime?

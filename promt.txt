@@ -1,0 +1,13 @@
+Task: Replace server/mailer.js with the exact code below. Do not modify api.js, admin.js, or any other file — this is a self-contained swap of the email backend from Gmail SMTP to Resend.
+
+1. Overwrite the full contents of server/mailer.js with this code:
+
+[paste the full mailer.js code here]
+
+2. In package.json, remove "nodemailer" from dependencies and add "resend" (latest version) instead.
+
+3. Run npm install so package-lock.json reflects the change.
+
+4. Do NOT touch .env — I will update the environment variables myself.
+
+5. Confirm when done by showing me the diff of files changed.
