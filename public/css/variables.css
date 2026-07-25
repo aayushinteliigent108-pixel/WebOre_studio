@@ -9,6 +9,9 @@
   --text-dim: #9a9a9e;
   --accent: #F5820D;
   --accent-dim: #7a3f0c;
+  --accent-2: #B14EFF;
+  --accent-3: #3DE0D8;
+  --gradient-hero: linear-gradient(135deg, var(--accent), var(--accent-2));
   --cloud-light: #EEF0F2;
 
   /* ===== Legacy color aliases (kept for JS/backend compat) ===== */
@@ -29,6 +32,8 @@
   --color-accent: var(--accent);
   --color-accent-hover: #f5950d;
   --color-accent-dark: var(--accent-dim);
+  --color-accent-2: var(--accent-2);
+  --color-accent-3: var(--accent-3);
   --color-text-primary: var(--text);
   --color-text-secondary: var(--text-dim);
   --color-text-muted: var(--text-dim);

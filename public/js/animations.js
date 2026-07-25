@@ -107,6 +107,9 @@ export function initAnimations() {
 
   // Cursor ambient glow (desktop only)
   initCursorGlow();
+
+  // Magnetic hover on CTA buttons
+  initMagneticButtons();
 }
 
 function initCursorGlow() {
@@ -125,6 +128,27 @@ function initCursorGlow() {
 
   document.addEventListener('mouseleave', () => {
     glow.classList.remove('active');
+  });
+}
+
+function initMagneticButtons() {
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  if (window.matchMedia('(pointer: coarse)').matches) return;
+
+  const buttons = document.querySelectorAll('.btn--primary, .btn--lg');
+  buttons.forEach(btn => {
+    btn.addEventListener('mousemove', (e) => {
+      const rect = btn.getBoundingClientRect();
+      const x = e.clientX - rect.left - rect.width / 2;
+      const y = e.clientY - rect.top - rect.height / 2;
+      btn.style.transform = `translate(${x * 0.15}px, ${y * 0.15}px)`;
+    }, { passive: true });
+
+    btn.addEventListener('mouseleave', () => {
+      btn.style.transform = '';
+      btn.style.transition = 'transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)';
+      setTimeout(() => { btn.style.transition = ''; }, 400);
+    });
   });
 }
 

@@ -183,7 +183,7 @@ body {
   100% { background-position: 0% 50%; }
 }
 .text-accent {
-  background: linear-gradient(135deg, var(--accent), #f5b50d, var(--accent));
+  background: var(--gradient-hero);
   background-size: 200% auto;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -191,17 +191,65 @@ body {
   animation: gradientShift 4s ease infinite;
 }
 
+/* ===== Animated mesh/blob background ===== */
+.mesh-bg {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 0;
+}
+.mesh-bg::before,
+.mesh-bg::after {
+  content: '';
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(120px);
+  opacity: 0.12;
+  animation: meshDrift 20s ease-in-out infinite alternate;
+  will-change: transform;
+}
+.mesh-bg::before {
+  width: 600px; height: 600px;
+  background: var(--accent);
+  top: -200px; right: -100px;
+}
+.mesh-bg::after {
+  width: 500px; height: 500px;
+  background: var(--accent-2);
+  bottom: -150px; left: -100px;
+  animation-delay: -10s;
+  animation-direction: alternate-reverse;
+}
+@keyframes meshDrift {
+  0%   { transform: translate(0, 0) scale(1); }
+  100% { transform: translate(80px, 40px) scale(1.15); }
+}
+
+/* ===== Magnetic button transition ===== */
+.magnetic-btn {
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform;
+}
+
+/* ===== Testimonial gradient border ===== */
+.testimonial-card--gradient {
+  border-image: linear-gradient(135deg, var(--accent), var(--accent-2)) 1;
+  border-width: 1px;
+  border-style: solid;
+}
+
 /* Glow pulse on buttons */
 @keyframes glowPulse {
-  0%, 100% { box-shadow: 0 4px 16px rgba(245, 130, 13, 0.3); }
-  50%      { box-shadow: 0 4px 32px rgba(245, 130, 13, 0.5); }
+  0%, 100% { box-shadow: 0 4px 20px rgba(177, 78, 255, 0.2), 0 4px 16px rgba(245, 130, 13, 0.25); }
+  50%      { box-shadow: 0 4px 32px rgba(177, 78, 255, 0.35), 0 4px 28px rgba(245, 130, 13, 0.4); }
 }
 .btn--primary {
   animation: glowPulse 3s ease-in-out infinite;
 }
 .btn--primary:hover {
   animation: none;
-  box-shadow: 0 8px 32px rgba(245, 130, 13, 0.5);
+  box-shadow: 0 8px 32px rgba(177, 78, 255, 0.35), 0 8px 28px rgba(245, 130, 13, 0.4);
 }
 
 /* Floating animation for cards on hover */
@@ -243,7 +291,7 @@ body {
   bottom: -4px;
   width: 0;
   height: 2px;
-  background: var(--accent);
+  background: var(--gradient-hero);
   transition: width 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 .nav__link:hover::after,

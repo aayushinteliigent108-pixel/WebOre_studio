@@ -316,6 +316,7 @@
     <!-- ===== SCROLL-LINKED HERO (500vh track) ===== -->
     <div id="heroTrack" class="hs-track" aria-label="Cinematic hero">
       <div class="hs-sticky">
+        <div class="mesh-bg" aria-hidden="true"></div>
         <div id="hsLoader" class="hs-loader" role="status" aria-live="polite">
           <div class="hs-loader__logo">Web<span>ore</span></div>
           <div class="hs-loader__bar-wrap"><div id="hsLoaderBar" class="hs-loader__bar"></div></div>
@@ -335,22 +336,32 @@
       </div>
     </div>
 
-    <!-- ===== INTRO MARQUEE ===== -->
+    <!-- ===== SOCIAL PROOF LOGO MARQUEE ===== -->
     <div class="section" style="padding:40px 0;background:var(--bg-soft);overflow:hidden;border-top:1px solid var(--border);border-bottom:1px solid var(--border);">
+      <p class="section-label text-center" style="margin-bottom:1.5rem;">Trusted By</p>
       <div class="marquee" aria-hidden="true">
-        <div class="marquee__track">
-          <span>Web Design</span><span class="dot" style="color:var(--accent);">●</span>
-          <span>E-Commerce</span><span class="dot" style="color:var(--accent);">●</span>
-          <span>Development</span><span class="dot" style="color:var(--accent);">●</span>
-          <span>SEO &amp; Growth</span><span class="dot" style="color:var(--accent);">●</span>
-          <span>Branding</span><span class="dot" style="color:var(--accent);">●</span>
-          <span>Maintenance</span><span class="dot" style="color:var(--accent);">●</span>
-          <span>Web Design</span><span class="dot" style="color:var(--accent);">●</span>
-          <span>E-Commerce</span><span class="dot" style="color:var(--accent);">●</span>
-          <span>Development</span><span class="dot" style="color:var(--accent);">●</span>
-          <span>SEO &amp; Growth</span><span class="dot" style="color:var(--accent);">●</span>
-          <span>Branding</span><span class="dot" style="color:var(--accent);">●</span>
-          <span>Maintenance</span><span class="dot" style="color:var(--accent);">●</span>
+        <div class="marquee__track" style="gap:3.5rem;opacity:0.45;">
+          <span style="font-family:var(--font-display);font-weight:700;font-size:1rem;letter-spacing:-0.02em;">Google</span>
+          <span style="font-family:var(--font-display);font-weight:700;font-size:1rem;letter-spacing:-0.02em;">Stripe</span>
+          <span style="font-family:var(--font-display);font-weight:700;font-size:1rem;letter-spacing:-0.02em;">Vercel</span>
+          <span style="font-family:var(--font-display);font-weight:700;font-size:1rem;letter-spacing:-0.02em;">Shopify</span>
+          <span style="font-family:var(--font-display);font-weight:700;font-size:1rem;letter-spacing:-0.02em;">Notion</span>
+          <span style="font-family:var(--font-display);font-weight:700;font-size:1rem;letter-spacing:-0.02em;">Slack</span>
+          <span style="font-family:var(--font-display);font-weight:700;font-size:1rem;letter-spacing:-0.02em;">Figma</span>
+          <span style="font-family:var(--font-display);font-weight:700;font-size:1rem;letter-spacing:-0.02em;">Linear</span>
+          <span style="font-family:var(--font-display);font-weight:700;font-size:1rem;letter-spacing:-0.02em;">GitHub</span>
+          <span style="font-family:var(--font-display);font-weight:700;font-size:1rem;letter-spacing:-0.02em;">Cloudflare</span>
+          <!-- Duplicate for seamless loop -->
+          <span style="font-family:var(--font-display);font-weight:700;font-size:1rem;letter-spacing:-0.02em;">Google</span>
+          <span style="font-family:var(--font-display);font-weight:700;font-size:1rem;letter-spacing:-0.02em;">Stripe</span>
+          <span style="font-family:var(--font-display);font-weight:700;font-size:1rem;letter-spacing:-0.02em;">Vercel</span>
+          <span style="font-family:var(--font-display);font-weight:700;font-size:1rem;letter-spacing:-0.02em;">Shopify</span>
+          <span style="font-family:var(--font-display);font-weight:700;font-size:1rem;letter-spacing:-0.02em;">Notion</span>
+          <span style="font-family:var(--font-display);font-weight:700;font-size:1rem;letter-spacing:-0.02em;">Slack</span>
+          <span style="font-family:var(--font-display);font-weight:700;font-size:1rem;letter-spacing:-0.02em;">Figma</span>
+          <span style="font-family:var(--font-display);font-weight:700;font-size:1rem;letter-spacing:-0.02em;">Linear</span>
+          <span style="font-family:var(--font-display);font-weight:700;font-size:1rem;letter-spacing:-0.02em;">GitHub</span>
+          <span style="font-family:var(--font-display);font-weight:700;font-size:1rem;letter-spacing:-0.02em;">Cloudflare</span>
         </div>
       </div>
     </div>
@@ -503,26 +514,25 @@
         <p>We deliver results that speak for themselves.</p>
       </div>
       <div class="services-grid reveal-stagger">
-        <div class="card" style="padding:0;overflow:hidden;">
-          <div style="height:140px;background-image:url('https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600&h=250&fit=crop');background-size:cover;background-position:center;"></div>
-          <div style="padding:var(--space-xl);">
-            <h3>Responsive Design</h3>
-            <p>Pixel-perfect websites that look stunning on every screen size and device.</p>
-          </div>
+        <div class="value-card" style="text-align:center;padding:var(--space-2xl);">
+          <div class="icon-circle" style="margin:0 auto var(--space-md);">⚡</div>
+          <h3 style="font-size:var(--text-xl);margin-bottom:var(--space-sm);">Speed</h3>
+          <p class="value-card__text">From concept to launch in 2–6 weeks. We move fast without cutting corners.</p>
         </div>
-        <div class="card" style="padding:0;overflow:hidden;">
-          <div style="height:140px;background-image:url('https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=600&h=250&fit=crop');background-size:cover;background-position:center;"></div>
-          <div style="padding:var(--space-xl);">
-            <h3>Fast Turnaround</h3>
-            <p>From concept to launch in record time without sacrificing quality.</p>
-          </div>
+        <div class="value-card" style="text-align:center;padding:var(--space-2xl);">
+          <div class="icon-circle" style="margin:0 auto var(--space-md);background:var(--accent-2);color:#fff;">🎨</div>
+          <h3 style="font-size:var(--text-xl);margin-bottom:var(--space-sm);">Design Quality</h3>
+          <p class="value-card__text">Every pixel designed with intent. Custom visuals, no templates, ever.</p>
         </div>
-        <div class="card" style="padding:0;overflow:hidden;">
-          <div style="height:140px;background-image:url('https://images.unsplash.com/photo-1563013544-824ae1b704d3?w=600&h=250&fit=crop');background-size:cover;background-position:center;"></div>
-          <div style="padding:var(--space-xl);">
-            <h3>Secure Hosting</h3>
-            <p>Enterprise-grade security and 99.9% uptime for your website.</p>
-          </div>
+        <div class="value-card" style="text-align:center;padding:var(--space-2xl);">
+          <div class="icon-circle" style="margin:0 auto var(--space-md);background:var(--accent-3);color:#0a0a0b;">🛡️</div>
+          <h3 style="font-size:var(--text-xl);margin-bottom:var(--space-sm);">Ongoing Support</h3>
+          <p class="value-card__text">We don't disappear after launch. Updates, monitoring, and support included.</p>
+        </div>
+        <div class="value-card" style="text-align:center;padding:var(--space-2xl);">
+          <div class="icon-circle" style="margin:0 auto var(--space-md);">💰</div>
+          <h3 style="font-size:var(--text-xl);margin-bottom:var(--space-sm);">Transparent Pricing</h3>
+          <p class="value-card__text">Fixed prices, no surprises. You know exactly what you're paying for.</p>
         </div>
       </div>
     </section>
@@ -570,15 +580,66 @@
       </div>
     </section>
 
-    <!-- ===== TESTIMONIAL QUOTE ===== -->
-    <section style="text-align:center;padding:80px var(--side-padding);background:var(--bg-soft);" aria-label="Our mission">
-      <div class="reveal" style="display:flex;justify-content:center;gap:8px;margin-bottom:var(--space-lg);">
-        <div style="width:48px;height:48px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:1.2rem;">⚡</div>
+    <!-- ===== TESTIMONIALS ===== -->
+    <section style="padding:120px var(--side-padding);background:var(--bg-soft);" aria-label="Testimonials">
+      <div class="section-head reveal" style="text-align:center;">
+        <div class="eyebrow" style="animation:none;opacity:1;transform:none;margin:0 auto var(--space-md);"><span class="dot"></span>Testimonials</div>
+        <h2>What Clients <span class="text-accent">Say</span></h2>
+        <p>Real feedback from brands we've helped grow.</p>
       </div>
-      <h2 class="reveal" style="max-width:760px;margin:0 auto;font-size:clamp(1.5rem,3vw,2.1rem);font-weight:600;line-height:1.45;font-family:var(--font-display);">
-        We don't just build websites — we craft digital experiences that convert visitors into clients and scale with your business.
-      </h2>
-      <p class="reveal" style="margin-top:20px;color:var(--text-dim);font-size:var(--text-sm);letter-spacing:0.05em;text-transform:uppercase;">— The Webore Team</p>
+      <div class="testimonials-track reveal-stagger" id="testimonialsTrack" style="justify-content:center;">
+        <div class="testimonial-card" style="border-image:linear-gradient(135deg,var(--accent),var(--accent-2)) 1;border-width:1px;border-style:solid;">
+          <div class="testimonial-card__header">
+            <div class="avatar" style="background:var(--accent);color:#0a0a0b;">R</div>
+            <div>
+              <div class="testimonial-card__name">Riya Sharma</div>
+              <div class="testimonial-card__role">Founder, GlowCare Studio</div>
+            </div>
+          </div>
+          <div class="testimonial-card__stars">
+            <svg viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            <svg viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            <svg viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            <svg viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            <svg viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+          </div>
+          <p class="testimonial-card__quote">"Webore transformed our online presence completely. The design is stunning and our bookings increased by 40% in the first month."</p>
+        </div>
+        <div class="testimonial-card" style="border-image:linear-gradient(135deg,var(--accent-2),var(--accent-3)) 1;border-width:1px;border-style:solid;">
+          <div class="testimonial-card__header">
+            <div class="avatar" style="background:var(--accent-2);color:#fff;">A</div>
+            <div>
+              <div class="testimonial-card__name">Arjun Patel</div>
+              <div class="testimonial-card__role">CEO, TFB Fitness</div>
+            </div>
+          </div>
+          <div class="testimonial-card__stars">
+            <svg viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            <svg viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            <svg viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            <svg viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            <svg viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+          </div>
+          <p class="testimonial-card__quote">"Fast, clean, and exactly what we asked for. The team understood our vision from day one. Highly recommend for any fitness brand."</p>
+        </div>
+        <div class="testimonial-card" style="border-image:linear-gradient(135deg,var(--accent-3),var(--accent)) 1;border-width:1px;border-style:solid;">
+          <div class="testimonial-card__header">
+            <div class="avatar" style="background:var(--accent-3);color:#0a0a0b;">S</div>
+            <div>
+              <div class="testimonial-card__name">Sneha Reddy</div>
+              <div class="testimonial-card__role">Marketing Lead, Nimbus</div>
+            </div>
+          </div>
+          <div class="testimonial-card__stars">
+            <svg viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            <svg viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            <svg viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            <svg viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            <svg viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+          </div>
+          <p class="testimonial-card__quote">"Our SaaS dashboard went from concept to launch in 3 weeks. The attention to detail and performance optimization was incredible."</p>
+        </div>
+      </div>
     </section>
 
     <!-- ===== STATS ===== -->
@@ -680,6 +741,37 @@
       </div>
     </section>
 
+    <!-- ===== BEFORE / AFTER ===== -->
+    <section style="padding:120px var(--side-padding);" aria-label="Before and After">
+      <div class="section-head text-center reveal">
+        <div class="eyebrow" style="animation:none;opacity:1;transform:none;margin:0 auto var(--space-md);"><span class="dot"></span>Transformations</div>
+        <h2>Before &amp; <span class="text-accent">After</span></h2>
+        <p>See the difference a premium redesign makes.</p>
+      </div>
+      <div class="reveal" style="max-width:800px;margin:0 auto;">
+        <div id="comparisonSlider" style="position:relative;border-radius:var(--radius-xl);overflow:hidden;border:1px solid var(--border);cursor:ew-resize;user-select:none;-webkit-user-select:none;">
+          <!-- After image (full width, behind) -->
+          <div style="width:100%;">
+            <img src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=900&h=500&fit=crop" alt="After redesign" style="width:100%;display:block;" loading="lazy">
+          </div>
+          <!-- Before image (clipped) -->
+          <div id="comparisonBefore" style="position:absolute;top:0;left:0;width:50%;height:100%;overflow:hidden;">
+            <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=900&h=500&fit=crop" alt="Before redesign" style="width:900px;max-width:none;height:100%;object-fit:cover;display:block;" loading="lazy">
+          </div>
+          <!-- Divider handle -->
+          <div id="comparisonHandle" style="position:absolute;top:0;bottom:0;width:3px;background:var(--accent);left:50%;transform:translateX(-50%);z-index:10;pointer-events:none;">
+            <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:40px;height:40px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(245,130,13,0.4);pointer-events:auto;cursor:ew-resize;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0a0a0b" stroke-width="2.5" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg>
+            </div>
+          </div>
+          <!-- Labels -->
+          <div style="position:absolute;top:16px;left:16px;background:rgba(10,10,11,0.7);backdrop-filter:blur(8px);padding:6px 14px;border-radius:999px;font-size:var(--text-xs);font-weight:700;color:var(--text-dim);z-index:5;pointer-events:none;">Before</div>
+          <div style="position:absolute;top:16px;right:16px;background:rgba(245,130,13,0.9);padding:6px 14px;border-radius:999px;font-size:var(--text-xs);font-weight:700;color:#0a0a0b;z-index:5;pointer-events:none;">After</div>
+        </div>
+        <p class="text-center" style="margin-top:var(--space-lg);font-size:var(--text-sm);color:var(--text-dim);">Drag the slider to compare</p>
+      </div>
+    </section>
+
     <!-- ===== FAQ ===== -->
     <section id="faq" style="padding:120px var(--side-padding);background:var(--bg-soft);" aria-label="FAQ">
       <div class="section-head reveal">
@@ -714,6 +806,7 @@
     <!-- ===== CTA BANNER ===== -->
     <section id="cta" style="padding:120px var(--side-padding);" aria-label="Get in touch">
       <div class="cta-banner reveal">
+        <div class="mesh-bg" aria-hidden="true"></div>
         <div class="eyebrow" style="animation:none;opacity:1;transform:none;margin:0 auto var(--space-lg);"><span class="dot"></span>Get in Touch</div>
         <h2>Ready to Transform Your <span class="text-accent">Digital Presence?</span></h2>
         <p style="margin-top:12px;margin-bottom:var(--space-xl);">Let's build something extraordinary together.</p>
@@ -843,6 +936,46 @@
         wrapWords(h);
         io2.observe(h);
       });
+    })();
+
+    /* ============================================================
+       COMPARISON SLIDER
+       ============================================================ */
+    (function(){
+      var slider = document.getElementById('comparisonSlider');
+      var before = document.getElementById('comparisonBefore');
+      var handle = document.getElementById('comparisonHandle');
+      if (!slider || !before || !handle) return;
+
+      var isDragging = false;
+
+      function setPosition(x) {
+        var rect = slider.getBoundingClientRect();
+        var pct = Math.max(0, Math.min(100, ((x - rect.left) / rect.width) * 100));
+        before.style.width = pct + '%';
+        handle.style.left = pct + '%';
+      }
+
+      slider.addEventListener('mousedown', function(e) {
+        isDragging = true;
+        setPosition(e.clientX);
+      });
+      document.addEventListener('mousemove', function(e) {
+        if (!isDragging) return;
+        e.preventDefault();
+        setPosition(e.clientX);
+      });
+      document.addEventListener('mouseup', function() { isDragging = false; });
+
+      slider.addEventListener('touchstart', function(e) {
+        isDragging = true;
+        setPosition(e.touches[0].clientX);
+      }, { passive: true });
+      slider.addEventListener('touchmove', function(e) {
+        if (!isDragging) return;
+        setPosition(e.touches[0].clientX);
+      }, { passive: true });
+      slider.addEventListener('touchend', function() { isDragging = false; });
     })();
 
     // Apply the in-state

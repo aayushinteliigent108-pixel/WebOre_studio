@@ -1,11 +1,13 @@
-/* hero-scroll.js — 240-frame scroll-linked canvas hero for Webore */
+/* hero-scroll.js — Optimized 80-frame scroll-linked canvas hero for Webore */
 (function () {
   'use strict';
 
   /* ===== Configuration ===== */
-  var TOTAL_FRAMES = 240;
-  var FRAME_BASE = '/assets/frames/';
-  var FRAME_EXT = '.png';
+  var TOTAL_FRAMES = 80;
+  var FRAME_BASE = '/assets/frames-opt/';
+  var FRAME_EXT = '.webp'; // Falls back to .png if WebP frames don't exist
+  var LRU_SIZE = 15;       // Keep only 15 most recent frames in memory
+  var CRITICAL_COUNT = 10; // Load first 10 frames before showing hero
 
   var BEATS = [
     { at: 0.00, eyebrow: 'Web Studio',    headline: ['Your stack.', 'Elevated.'],           sub: 'Premium digital experiences that convert.', explore: 'Explore Now →' },
@@ -37,12 +39,15 @@
   }
 
   /* ===== State ===== */
-  var frames       = new Array(TOTAL_FRAMES);
+  var frames       = new Array(TOTAL_FRAMES); // LRU buffer — holds Image objects or null
+  var loadedFlags  = new Array(TOTAL_FRAMES); // true if frame has been loaded at least once
   var loadedCount  = 0;
   var currentFrame = -1;
   var rafId        = null;
   var pendingDraw  = false;
   var targetFrame  = 0;
+  var heroReady    = false;
+  var usageOrder   = []; // LRU tracking: most recently used at end
 
   /* ===== Helpers ===== */
   function padNum(n) { return String(n).padStart(5, '0'); }
@@ -75,25 +80,102 @@
     ctx.drawImage(img, dx, dy, dw, dh);
   }
 
-  /* ===== Preload all frames ===== */
-  function preloadFrames(onComplete) {
+  /* ===== LRU Buffer Management ===== */
+  function touchFrame(idx) {
+    // Move to end of usageOrder (most recently used)
+    var pos = usageOrder.indexOf(idx);
+    if (pos !== -1) usageOrder.splice(pos, 1);
+    usageOrder.push(idx);
+    // Evict if over limit
+    while (usageOrder.length > LRU_SIZE) {
+      var evict = usageOrder.shift();
+      frames[evict] = null; //释放 Image object (allow GC)
+    }
+  }
+
+  function loadFrame(idx, callback) {
+    if (idx < 0 || idx >= TOTAL_FRAMES) return;
+    if (frames[idx] && frames[idx].complete) {
+      touchFrame(idx);
+      if (callback) callback(frames[idx]);
+      return;
+    }
+    if (loadedFlags[idx]) return; // Already attempted, skip
+
+    loadedFlags[idx] = true;
+    var img = new Image();
+    img.onload = function () {
+      loadedCount++;
+      frames[idx] = img;
+      touchFrame(idx);
+      if (callback) callback(img);
+    };
+    img.onerror = function () {
+      loadedCount++;
+      loadedFlags[idx] = false; // Allow retry
+    };
+    img.src = FRAME_BASE + padNum(idx + 1) + FRAME_EXT;
+  }
+
+  /* ===== Phase 1: Critical frames (0–9) ===== */
+  function loadCriticalFrames(onComplete) {
     var startTime = Date.now();
-    for (var i = 0; i < TOTAL_FRAMES; i++) {
+    var loaded = 0;
+    var needed = Math.min(CRITICAL_COUNT, TOTAL_FRAMES);
+
+    for (var i = 0; i < needed; i++) {
       (function (idx) {
-        var img = new Image();
-        img.onload = img.onerror = function () {
-          loadedCount++;
-          var pct = Math.round((loadedCount / TOTAL_FRAMES) * 100);
+        loadFrame(idx, function () {
+          loaded++;
+          var pct = Math.round((loaded / needed) * 100);
           if (loaderBar) loaderBar.style.width = pct + '%';
-          if (loadedCount === TOTAL_FRAMES) {
-            var delay = Math.max(0, 200 - (Date.now() - startTime));
+          if (loaded === needed) {
+            var delay = Math.max(0, 300 - (Date.now() - startTime));
             setTimeout(onComplete, delay);
           }
-        };
-        img.src = FRAME_BASE + padNum(idx + 1) + FRAME_EXT;
-        frames[idx] = img;
+        });
       })(i);
     }
+  }
+
+  /* ===== Phase 2: Background loading (10–79) ===== */
+  function loadRemainingFrames() {
+    var startIdx = CRITICAL_COUNT;
+    var idx = startIdx;
+
+    function loadNext() {
+      if (idx >= TOTAL_FRAMES) return;
+      var current = idx;
+      idx++;
+
+      loadFrame(current, null);
+
+      // Use requestIdleCallback for non-blocking loading, fallback to setTimeout
+      if (window.requestIdleCallback) {
+        window.requestIdleCallback(loadNext, { timeout: 200 });
+      } else {
+        setTimeout(loadNext, 50);
+      }
+    }
+
+    // Start after a short delay so hero interaction isn't affected
+    setTimeout(loadNext, 500);
+  }
+
+  /* ===== Get frame (with on-demand loading) ===== */
+  function getFrame(idx) {
+    idx = Math.max(0, Math.min(TOTAL_FRAMES - 1, idx));
+    if (frames[idx] && frames[idx].complete && frames[idx].naturalWidth) {
+      touchFrame(idx);
+      return frames[idx];
+    }
+    // Frame not in buffer — load on demand
+    loadFrame(idx, function (img) {
+      if (idx === targetFrame) {
+        drawFrame(img);
+      }
+    });
+    return null;
   }
 
   /* ===== Scroll → frame index ===== */
@@ -195,7 +277,8 @@
     pendingDraw = false;
     if (targetFrame !== currentFrame) {
       currentFrame = targetFrame;
-      drawFrame(frames[currentFrame]);
+      var img = getFrame(currentFrame);
+      if (img) drawFrame(img);
     }
   }
 
@@ -206,6 +289,7 @@
     scrollScheduled = true;
     requestAnimationFrame(function () {
       scrollScheduled = false;
+      if (!heroReady) return;
       var progress = getScrollProgress();
       scheduleFrame(Math.round(progress * (TOTAL_FRAMES - 1)));
       updateCaptions(progress);
@@ -218,7 +302,10 @@
     clearTimeout(resizeTimer);
     resizeTimer = setTimeout(function () {
       resizeCanvas();
-      if (currentFrame >= 0 && frames[currentFrame]) drawFrame(frames[currentFrame]);
+      if (currentFrame >= 0) {
+        var img = getFrame(currentFrame);
+        if (img) drawFrame(img);
+      }
     }, 150);
   }
 
@@ -292,14 +379,20 @@
     buildDots();
     initDotNavigation();
 
-    preloadFrames(function () {
+    /* Phase 1: Load critical frames, then show hero */
+    loadCriticalFrames(function () {
+      heroReady = true;
       currentFrame = 0;
-      drawFrame(frames[0]);
+      var firstImg = getFrame(0);
+      if (firstImg) drawFrame(firstImg);
       updateCaptions(0);
       if (loader) loader.classList.add('hidden');
       window.addEventListener('scroll', onScroll, { passive: true });
       window.addEventListener('resize', onResize, { passive: true });
       onScroll();
+
+      /* Phase 2: Load remaining frames in background */
+      loadRemainingFrames();
     });
   }
 
